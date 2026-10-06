@@ -20,7 +20,7 @@ export default async function BusinessesAdmin() {
         <tbody>
           {(data ?? []).map((b) => (
             <tr key={b.id}>
-              <td><Link href={`/admin/matching?b=${b.id}`} className="font-semibold text-ink hover:underline">{b.name}</Link></td>
+              <td><Link href={`/admin/businesses/${b.id}`} className="font-semibold text-ink hover:underline">{b.name}</Link></td>
               <td>{stageName(b.stage)}</td>
               <td className="text-[13px]">{industryLabel(b.industry)}</td>
               <td>{b.province}</td>

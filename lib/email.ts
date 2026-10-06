@@ -36,7 +36,7 @@ export async function sendEmail({ to, subject, text, replyTo, attachments }: Ema
 }
 
 /** Team inbox for contact, fit-call and lead notifications (§4E). Changeable without code edits. */
-export const teamInbox = () => process.env.CONTACT_INBOX_EMAIL ?? BRAND.contactEmail;
+export const teamInbox = () => process.env.CONTACT_INBOX_EMAIL ?? "fundinglab.ca@gmail.com";
 
 /** Optional SMS via Twilio (opt-in only). Silently skipped when not configured. */
 export async function sendSms(to: string, body: string): Promise<boolean> {

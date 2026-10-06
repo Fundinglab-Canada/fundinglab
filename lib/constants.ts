@@ -5,13 +5,15 @@ import en from "@/messages/en.json";
 
 export const BRAND = {
   ...en.brand,
-  contactEmail: "fundinglab.ca@gmail.com",
-  contactLine: `${en.brand.contactName} · fundinglab.ca@gmail.com`,
+  contactLine: `${en.brand.contactName} · Reach us through the Contact page on our website.`,
 } as const;
 
 export const CTA = { ...en.cta, href: "/signup" } as const;
 
 export const CONSENT = en.consent;
+
+/** Number of steps in the business profile wizard. */
+export const PROFILE_STEP_COUNT = 6;
 
 export const STAGES = [
   { id: "idea", name: "Idea", desc: "Concept only" },
@@ -55,11 +57,11 @@ export const PAIN_POINTS = [
   { quote: "I don't know which funding I qualify for.", module: "Readiness Assessment + Funding Roadmap", href: "/assessment" },
   { quote: "Grants are scattered across dozens of websites.", module: "Grant Intelligence", href: "/grants" },
   { quote: "I'm not investor- or lender-ready.", module: "Prep Studio", href: "/services" },
-  { quote: "Applications take forever and get rejected.", module: "Application Center", href: "/services#grant_writing" },
+  { quote: "Applications take forever and get rejected.", module: "Application Center", href: "/services/grant_writing" },
   { quote: "I can't reach the right investors or lenders.", module: "Private Matchmaking", href: "/signup" },
-  { quote: "I don't understand term sheets or loan terms.", module: "Deal Close Support", href: "/services#legal_cpa_review" },
+  { quote: "I don't understand term sheets or loan terms.", module: "Deal Close Support", href: "/services/legal_cpa_review" },
   { quote: "Grants pay after I spend — I have a cash gap.", module: "Bridge Financing", href: "/funding-paths/business-loans" },
-  { quote: "Post-funding reporting is a nightmare.", module: "Post-Funding Hub", href: "/services#grant_writing" },
+  { quote: "Post-funding reporting is a nightmare.", module: "Post-Funding Hub", href: "/services/grant_writing" },
   { quote: "I start from zero every time I raise.", module: "Next Round Engine", href: "/signup" },
 ] as const;
 
@@ -189,30 +191,30 @@ export const DEAL_STATUSES = [
 export type DealStatus = (typeof DEAL_STATUSES)[number]["id"];
 
 // Services (§4H, §11). Prices in CAD cents; "quote" services have no fixed price. Admin-configurable packages are Phase 2.
+// Every service is quote-based: no public prices. Each has its own page at /services/[kind].
 export const SERVICES = [
-  { kind: "data_room", category: "funding", name: "Data Room", priceCents: 150000, priceLabel: "from $1,500", promise: "Investor-ready, organized the way VCs and lenders expect.",
+  { kind: "data_room", category: "funding", name: "Data Room", promise: "Investor-ready, organized the way VCs and lenders expect.",
     desc: "Virtual data room with corporate, financial, legal, IP, team, customer and product folders, a diligence checklist and access controls." },
-  { kind: "business_plan", category: "funding", name: "Business Plan", priceCents: 350000, priceLabel: "from $3,500", promise: "A plan lenders and investors actually read.",
+  { kind: "business_plan", category: "funding", name: "Business Plan", promise: "A plan lenders and investors actually read.",
     desc: "Lender- and investor-grade business plan with 3-year projections, market sizing and a use-of-funds narrative." },
-  { kind: "grant_writing", category: "funding", name: "Grant Writing", priceCents: 250000, priceLabel: "from $2,500 + success fee", promise: "The right program, a complete application.",
-    desc: "Program selection and full application drafting for federal and B.C. programs, plus claims and reporting support." },
-  { kind: "loan_consulting", category: "funding", name: "Loan Consulting", priceCents: 120000, priceLabel: "from $1,200", promise: "A loan package lenders say yes to.",
+  { kind: "grant_writing", category: "funding", name: "Grant Writing", promise: "The right program, a complete application.",
+    desc: "Program selection and full application drafting for federal and provincial programs, plus claims and reporting support." },
+  { kind: "loan_consulting", category: "funding", name: "Loan Consulting", promise: "A loan package lenders say yes to.",
     desc: "Lender matching and loan package preparation for CSBFP, BDC, credit unions and alternative lenders." },
-  { kind: "financial_model", category: "funding", name: "Financial Model", priceCents: null, priceLabel: "Quote", promise: "Numbers that hold up in diligence.",
+  { kind: "financial_model", category: "funding", name: "Financial Model", promise: "Numbers that hold up in diligence.",
     desc: "Three-statement financial model with scenarios, built from your actuals." },
-  { kind: "pitch_deck", category: "funding", name: "Pitch Deck", priceCents: null, priceLabel: "Quote", promise: "A deck that earns the second meeting.",
+  { kind: "pitch_deck", category: "funding", name: "Pitch Deck", promise: "A deck that earns the second meeting.",
     desc: "Twelve-slide investor deck review or build, with story, traction and ask." },
-  { kind: "legal_cpa_review", category: "funding", name: "Legal & CPA Review", priceCents: null, priceLabel: "Quote", promise: "Know what you're signing.",
+  { kind: "legal_cpa_review", category: "funding", name: "Legal & CPA Review", promise: "Know what you're signing.",
     desc: "Commercial lawyer or fractional CPA review of term sheets, loan offers and funding agreements." },
-  { kind: "hiring", category: "growth", name: "Hiring Staff", priceCents: null, priceLabel: "Quote", href: "/services/hiring",
-    promise: "Hire the right people, and use wage subsidies to pay for part of it.",
-    desc: "Role definition, sourcing, screening, interview support, contract staff, co-op students and interns." },
-  { kind: "development", category: "growth", name: "Development", priceCents: null, priceLabel: "Quote", href: "/services/development",
-    promise: "Build the technology your business runs on.",
-    desc: "Websites, web and mobile apps, CRM and ERP, e-commerce, AI and automation, integrations and cloud." },
-  { kind: "marketing", category: "growth", name: "Sales & Marketing", priceCents: null, priceLabel: "Quote", href: "/services/marketing",
-    promise: "Turn funding into customers and revenue.",
+  { kind: "development", category: "growth", name: "Product Development", promise: "Build the product and technology your business runs on.",
+    desc: "MVPs, websites, web and mobile apps, CRM and ERP, e-commerce, AI and automation, integrations and cloud." },
+  { kind: "marketing", category: "growth", name: "Marketing", promise: "Turn funding into customers and revenue.",
     desc: "Social media, Meta and Google Ads, SEO, content, email, branding, lead generation and export-market campaigns." },
+  { kind: "hiring", category: "growth", name: "Recruitment Service", promise: "Hire the right people, and use wage subsidies to pay for part of it.",
+    desc: "Role definition, sourcing, screening, interview support, contract staff, co-op students and interns." },
+  { kind: "ip_trademark", category: "growth", name: "Patent, IP & Trademark Filing", promise: "Protect what makes your business valuable.",
+    desc: "Trademark searches and filings, patent strategy and filings with registered agents, and IP assistance programs that can cover part of the cost." },
 ] as const;
 export type ServiceKind = (typeof SERVICES)[number]["kind"];
 export const serviceName = (k: string) => SERVICES.find((s) => s.kind === k)?.name ?? (k === "cohort" ? "Road to Funding" : k === "partner_membership" ? "Partner membership" : k);
@@ -239,42 +241,66 @@ export const DEPARTMENTS = ["Funding Advisory", "Grant Writing", "Business Devel
 export const TIMEZONE = "America/Vancouver";
 
 /** Use-of-funds answers that surface a "Grow With Your Funding" service (§ services triggers). */
-export const SERVICE_TRIGGERS: Record<string, "hiring" | "development" | "marketing"> = {
+export const SERVICE_TRIGGERS: Record<string, ServiceKind> = {
   hire_staff: "hiring",
   product_development: "development",
   marketing: "marketing",
+  ip_patent: "ip_trademark",
 };
 
-/** Service-specific quote fields for the growth services. */
-export const GROWTH_QUOTE_FIELDS = {
-  hiring: {
-    title: "Hiring Staff",
-    intro: "Tell us who you need. We'll scope recruitment support and check which wage subsidies could cover part of the cost.",
-    fields: [
-      { key: "roles", label: "Roles you want to hire", kind: "text", required: true },
-      { key: "headcount", label: "How many people?", kind: "number" },
-      { key: "employment_type", label: "Employment type", kind: "select", options: ["Full-time", "Part-time", "Contract", "Co-op / Intern", "Mixed"] },
-      { key: "wage_subsidy", label: "Interested in wage subsidies?", kind: "select", options: ["Yes", "No", "Not sure"] },
-    ],
-  },
-  development: {
-    title: "Development",
-    intro: "Describe what you want to build. We'll come back with scope options and a quote.",
-    fields: [
-      { key: "project_type", label: "Project type", kind: "select", options: ["Website", "Web app", "Mobile app", "CRM / ERP", "E-commerce", "AI & automation", "Integrations", "Cloud / infrastructure"], required: true },
-      { key: "has_design", label: "Do you have designs or specs?", kind: "select", options: ["Yes", "Partly", "No"] },
-    ],
-  },
-  marketing: {
-    title: "Sales & Marketing",
-    intro: "Tell us your goal and market. We'll propose channels and a plan.",
-    fields: [
-      { key: "goal", label: "Main goal", kind: "select", options: ["Leads", "Online sales", "Brand awareness", "Export market entry", "Retention"], required: true },
-      { key: "channels", label: "Channels of interest", kind: "text" },
-      { key: "markets", label: "Target markets", kind: "text" },
-    ],
-  },
-} as const;
-export type GrowthKind = keyof typeof GROWTH_QUOTE_FIELDS;
+type QuoteField = { key: string; label: string; kind: "text" | "number" | "select"; options?: readonly string[]; required?: boolean };
+
+/** Short requirement form shown on each service page before a quote. */
+export const SERVICE_FORMS: Record<ServiceKind, { intro: string; fields: readonly QuoteField[] }> = {
+  data_room: { intro: "Tell us where you are. We'll scope the data room and send a quote.", fields: [
+    { key: "raise_type", label: "What are you preparing for?", kind: "select", options: ["Equity raise", "Loan", "Grant application", "Sale / M&A", "Not sure"], required: true },
+    { key: "docs_ready", label: "How organized are your documents today?", kind: "select", options: ["Mostly ready", "Partly ready", "Starting from scratch"] },
+  ] },
+  business_plan: { intro: "Tell us who the plan is for. We'll scope it and send a quote.", fields: [
+    { key: "audience", label: "Who will read the plan?", kind: "select", options: ["Bank / lender", "Investors", "Grant program", "Internal planning", "Immigration / start-up visa"], required: true },
+    { key: "has_financials", label: "Do you have financial statements?", kind: "select", options: ["Yes, 2+ years", "Yes, under 2 years", "Pre-revenue"] },
+  ] },
+  grant_writing: { intro: "Tell us about your project. We'll confirm the best-fit programs and send a quote.", fields: [
+    { key: "program", label: "Program you're targeting (if known)", kind: "text" },
+    { key: "project_cost", label: "Estimated project cost (CAD)", kind: "number" },
+    { key: "deadline", label: "Application deadline (if known)", kind: "text" },
+  ] },
+  loan_consulting: { intro: "Tell us what the loan is for. We'll scope the package and send a quote.", fields: [
+    { key: "loan_amount", label: "Loan amount you need (CAD)", kind: "number", required: true },
+    { key: "loan_purpose", label: "Purpose", kind: "select", options: ["Equipment", "Working capital", "Real estate / leasehold", "Inventory", "Bridge financing", "Acquisition", "Other"], required: true },
+  ] },
+  financial_model: { intro: "Tell us what the model needs to show. We'll send a quote.", fields: [
+    { key: "purpose", label: "Model purpose", kind: "select", options: ["Equity raise", "Loan application", "Grant application", "Budgeting", "Valuation"], required: true },
+    { key: "has_actuals", label: "Do you have historical financials?", kind: "select", options: ["Yes", "Partly", "Pre-revenue"] },
+  ] },
+  pitch_deck: { intro: "Tell us about your raise. We'll send a quote for a review or a full build.", fields: [
+    { key: "deck_scope", label: "What do you need?", kind: "select", options: ["Review my existing deck", "Build a new deck"], required: true },
+    { key: "raise_amount", label: "Amount you're raising (CAD)", kind: "number" },
+  ] },
+  legal_cpa_review: { intro: "Tell us what you need reviewed. We'll match the right professional and send a quote.", fields: [
+    { key: "document_type", label: "Document to review", kind: "select", options: ["Term sheet", "Loan offer", "Grant / contribution agreement", "Shareholder agreement", "Other"], required: true },
+    { key: "review_deadline", label: "When do you need to sign?", kind: "text" },
+  ] },
+  development: { intro: "Describe what you want to build. We'll come back with scope options and a quote.", fields: [
+    { key: "project_type", label: "Project type", kind: "select", options: ["MVP / prototype", "Website", "Web app", "Mobile app", "CRM / ERP", "E-commerce", "AI & automation", "Integrations", "Cloud / infrastructure"], required: true },
+    { key: "has_design", label: "Do you have designs or specs?", kind: "select", options: ["Yes", "Partly", "No"] },
+  ] },
+  marketing: { intro: "Tell us your goal and market. We'll propose channels and a plan.", fields: [
+    { key: "goal", label: "Main goal", kind: "select", options: ["Leads", "Online sales", "Brand awareness", "Export market entry", "Retention"], required: true },
+    { key: "channels", label: "Channels of interest", kind: "text" },
+    { key: "markets", label: "Target markets", kind: "text" },
+  ] },
+  hiring: { intro: "Tell us who you need. We'll scope recruitment support and check which wage subsidies could cover part of the cost.", fields: [
+    { key: "roles", label: "Roles you want to hire", kind: "text", required: true },
+    { key: "headcount", label: "How many people?", kind: "number" },
+    { key: "employment_type", label: "Employment type", kind: "select", options: ["Full-time", "Part-time", "Contract", "Co-op / Intern", "Mixed"] },
+    { key: "wage_subsidy", label: "Interested in wage subsidies?", kind: "select", options: ["Yes", "No", "Not sure"] },
+  ] },
+  ip_trademark: { intro: "Tell us what you want to protect. We'll recommend the filing route and send a quote.", fields: [
+    { key: "ip_type", label: "What do you need?", kind: "select", options: ["Trademark", "Patent", "Industrial design", "Copyright", "IP strategy / not sure"], required: true },
+    { key: "ip_markets", label: "Where do you need protection?", kind: "select", options: ["Canada", "Canada + U.S.", "International"] },
+    { key: "ip_filed", label: "Have you filed anything already?", kind: "select", options: ["No", "Yes, in Canada", "Yes, outside Canada"] },
+  ] },
+};
 export const QUOTE_TIMELINES = ["ASAP", "1–3 months", "3–6 months", "Flexible"] as const;
 export const QUOTE_BUDGETS = ["Under $5,000", "$5,000–$15,000", "$15,000–$50,000", "$50,000+", "Not sure yet"] as const;

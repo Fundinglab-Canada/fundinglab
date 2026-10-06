@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getMyBusiness, requireUser } from "@/lib/auth";
 import { grantsForConfirmedEntity } from "@/lib/grants/lookup";
+import { grantsForRecipient } from "@/lib/grants/live";
 import { completeness, readiness } from "@/lib/readiness";
 import { slugify } from "@/lib/format";
 import { consentSchema, step1Schema, step2Schema, step3Schema, step4Schema, tractionSchema } from "@/lib/validation";
@@ -63,20 +64,22 @@ async function advance(supabase: SupabaseClient, businessId: string, step: numbe
 }
 
 export async function saveBasics(_prev: StepState, formData: FormData): Promise<StepState> {
-  const { userId } = await requireUser("/app/profile");
+  const { userId, profile } = await requireUser("/app/profile");
   const parsed = step1Schema.safeParse({ ...Object.fromEntries(formData), ownership_tags: formData.getAll("ownership_tags") });
   if (!parsed.success) return firstErrors(parsed.error.issues);
+  const basics = { ...parsed.data, industry_other: parsed.data.industry === "other" ? parsed.data.industry_other : null };
   const supabase = await createClient();
   const existing = await getMyBusiness();
 
   let businessId = existing?.id;
   if (existing) {
-    const { error } = await supabase.from("businesses").update(parsed.data).eq("id", existing.id);
+    const { error } = await supabase.from("businesses").update(basics).eq("id", existing.id);
     if (error) return { error: "We couldn't save your details. Try again." };
   } else {
     const { data, error } = await supabase
       .from("businesses")
-      .insert({ ...parsed.data, owner_id: userId, slug: await uniqueSlug(supabase, parsed.data.name) })
+      // Contact details are confirmed later, before the investor snapshot summary; start from the account.
+      .insert({ ...basics, contact_name: profile.full_name || null, contact_email: profile.email, owner_id: userId, slug: await uniqueSlug(supabase, parsed.data.name) })
       .select("id")
       .single();
     if (error || !data) return { error: "We couldn't create your profile. Try again." };
@@ -91,7 +94,9 @@ export async function saveBasics(_prev: StepState, formData: FormData): Promise<
       { name: parsed.data.name, province: parsed.data.province, city: parsed.data.city, businessNumber: parsed.data.business_number },
       entity,
     );
-    const found = grants.length ? grants : await grantsForConfirmedEntity(supabase, { name: entity }, entity);
+    const mirrored = grants.length ? grants : await grantsForConfirmedEntity(supabase, { name: entity }, entity);
+    // Not in the local mirror (e.g. before the first sync): re-read the live Government of Canada records server-side.
+    const found = mirrored.length ? mirrored : await grantsForRecipient(entity).catch(() => []);
     if (found.length) {
       await supabase.from("funding_history").upsert(
         found.map((g) => ({
@@ -102,7 +107,7 @@ export async function saveBasics(_prev: StepState, formData: FormData): Promise<
         { onConflict: "business_id,grant_owner_org,grant_ref" },
       );
       await supabase.from("businesses").update({ legal_name: parsed.data.name }).eq("id", businessId);
-      if (!existing && parsed.data.contact_email) await sendEmail({ to: parsed.data.contact_email, ...EMAIL_TEMPLATES.grant_history_found({}) });
+      if (!existing && profile.email) await sendEmail({ to: profile.email, ...EMAIL_TEMPLATES.grant_history_found({}) });
     }
   }
   return advance(supabase, businessId!, 1, existing?.profile_step ?? 1);
@@ -206,7 +211,7 @@ export async function saveConsent(_prev: StepState, formData: FormData): Promise
 }
 
 const MAX_BYTES = 25 * 1024 * 1024;
-const KINDS = ["pitch_deck", "financials", "business_plan", "tax_returns", "cap_table", "incorporation", "other"] as const;
+const KINDS = ["pitch_deck", "financials", "business_plan", "tax_returns", "cap_table", "incorporation", "registration_noa", "other"] as const;
 const MIME_OK = /^(application\/(pdf|msword|vnd\.openxmlformats-officedocument\.[\w.]+|vnd\.ms-(excel|powerpoint))|text\/csv)$/;
 
 export async function uploadDocument(formData: FormData) {

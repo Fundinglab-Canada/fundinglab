@@ -8,3 +8,6 @@ next-env.d.ts
 supabase/.branches
 supabase/.temp
 .DS_Store
+.vercel
+.env*
+!.env.example

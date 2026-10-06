@@ -68,7 +68,6 @@ from p;
 
 -- About page: founders and advisors (§4B). Bios stay as placeholders until supplied — never invented.
 insert into public.team_members (name, title, member_group, bio, sort_order) values
-  ('Pankaj (Peter) Bagga', 'Co-founder & CVO', 'founder', '[Bio to be added]', 1),
   ('Mike Qureshi', 'Co-founder & CEO', 'founder', '[Bio to be added]', 2),
   ('Saranvir Thiara', 'Advisor', 'advisor', '[Bio to be added]', 10),
   ('Beata Jirava', 'Advisor', 'advisor', '[Bio to be added]', 11),

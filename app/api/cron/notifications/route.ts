@@ -5,7 +5,7 @@ import { env } from "@/lib/env";
 
 /**
  * Drains the notifications outbox (rows written by fl_notify in the database) into email.
- * Scheduled by vercel.json every 5 minutes. Protected by CRON_SECRET (Vercel sends it as a Bearer token).
+ * Scheduled by .github/workflows/cron.yml every 5 minutes. Protected by CRON_SECRET (sent as a Bearer token).
  */
 export async function GET(request: Request) {
   if (request.headers.get("authorization") !== `Bearer ${env.cronSecret()}`) {

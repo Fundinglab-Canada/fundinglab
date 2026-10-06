@@ -1,5 +1,4 @@
 import { BRAND, CONTACT_ROLES, CONTACT_TOPICS } from "@/lib/constants";
-import { CopyEmail } from "@/components/copy-email";
 import { Turnstile } from "@/components/turnstile";
 import { ClosingCta } from "@/components/cta";
 import { ContactForm } from "./contact-form";
@@ -19,7 +18,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           </p>
           <div className="card flex flex-col gap-1">
             <b className="text-ink">{BRAND.contactName}</b>
-            <CopyEmail email={BRAND.contactEmail} className="font-medium text-brand-text underline" />
+            <span className="text-sm text-subtle">Use the form and we&apos;ll reply by email.</span>
           </div>
         </div>
         <ContactForm roles={[...CONTACT_ROLES]} topics={[...CONTACT_TOPICS]} defaultTopic={topic} turnstile={<Turnstile />} />

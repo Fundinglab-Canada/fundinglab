@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyBusiness, requireUser } from "@/lib/auth";
 import { money } from "@/lib/format";
 import type { DocumentRow, FundingHistoryRow } from "@/lib/types";
-import { STEP_COUNT, StepBasics, StepConsent, StepHistory, StepNeed, StepStage, StepTraction, WizardShell } from "@/components/profile/wizard";
+import { PROFILE_STEP_COUNT as STEP_COUNT } from "@/lib/constants";
+import { StepBasics, StepConsent, StepHistory, StepNeed, StepStage, StepTraction, WizardShell } from "@/components/profile/wizard";
 import { deleteDocument, uploadDocument } from "./actions";
 
 export const metadata = { title: "Business profile" };
@@ -14,11 +15,12 @@ const DOC_KINDS = [
   { kind: "tax_returns", label: "Tax returns", hint: "Last 2 years (T2 or T1)" },
   { kind: "cap_table", label: "Cap table", hint: "Excel, CSV or PDF" },
   { kind: "incorporation", label: "Incorporation documents", hint: "Articles, certificate" },
+  { kind: "registration_noa", label: "Business registration or NOA", hint: "Optional: business registration, or CRA Notice of Assessment" },
 ] as const;
 
 export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ step?: string; error?: string }> }) {
   const sp = await searchParams;
-  const { profile } = await requireUser("/app/profile");
+  await requireUser("/app/profile");
   const business = await getMyBusiness();
   const maxStep = business ? Math.min(STEP_COUNT, business.profile_step) : 1;
   const requested = Number(sp.step ?? maxStep) || 1;
@@ -40,7 +42,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   return (
     <section className="container grid items-start gap-6 py-10 lg:grid-cols-[minmax(0,1fr)_300px]">
       <WizardShell step={step} maxStep={maxStep}>
-        {step === 1 && <StepBasics business={business} defaults={{ name: profile.full_name ?? "", email: profile.email ?? "" }} />}
+        {step === 1 && <StepBasics business={business} />}
         {step === 2 && business && <StepStage business={business} />}
         {step === 3 && business && <StepNeed business={business} />}
         {step === 4 && business && <StepHistory history={history} />}

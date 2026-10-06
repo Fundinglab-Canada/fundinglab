@@ -48,7 +48,7 @@ export const QUESTIONS: Question[] = [
     options: [{ label: "Paying customers", points: 3 }, { label: "Letters of intent or pilots", points: 2 }, { label: "Interviews only", points: 1 }, { label: "Not yet", points: 0 }],
     fix: "Get three signed letters of intent or a paid pilot." },
   { id: "bm_market", pillar: "business_model", text: "Do you know your target market size and your main competitors?",
-    options: yn("Yes, with sources", "Roughly", "No"), fix: "Size your market (TAM/SAM/SOM) and map five competitors." , service: { label: "Business Plan", href: "/services#business_plan" } },
+    options: yn("Yes, with sources", "Roughly", "No"), fix: "Size your market (TAM/SAM/SOM) and map five competitors." , service: { label: "Business Plan", href: "/services/business_plan" } },
   { id: "bm_moat", pillar: "business_model", text: "Do you have a clear advantage competitors can't easily copy?",
     options: yn("Yes", "Somewhat", "Not yet"), fix: "Name your edge: IP, data, cost, channel, or team expertise." },
 
@@ -66,9 +66,9 @@ export const QUESTIONS: Question[] = [
 
   { id: "fi_statements", pillar: "financials", text: "Do you have financial statements prepared by an accountant?",
     options: [{ label: "Yes, last 2 years", points: 3 }, { label: "Last year only", points: 2 }, { label: "Internal only", points: 1 }, { label: "No", points: 0 }],
-    fix: "Get year-end statements prepared by a CPA — lenders and most grants require them.", service: { label: "Legal & CPA Review", href: "/services#legal_cpa_review" } },
+    fix: "Get year-end statements prepared by a CPA — lenders and most grants require them.", service: { label: "Legal & CPA Review", href: "/services/legal_cpa_review" } },
   { id: "fi_forecast", pillar: "financials", text: "Do you have a 12–36 month financial forecast?",
-    options: yn("Yes, three-statement", "Revenue only", "No"), fix: "Build a monthly forecast with cash flow.", service: { label: "Financial Model", href: "/services#financial_model" } },
+    options: yn("Yes, three-statement", "Revenue only", "No"), fix: "Build a monthly forecast with cash flow.", service: { label: "Financial Model", href: "/services/financial_model" } },
   { id: "fi_books", pillar: "financials", text: "Is your bookkeeping up to date?",
     options: yn("Yes, monthly", "Behind by a few months", "No"), fix: "Catch up bookkeeping before applying for anything." },
   { id: "fi_use", pillar: "financials", text: "Do you know exactly how much you need and how you'll spend it?",
@@ -83,16 +83,16 @@ export const QUESTIONS: Question[] = [
     options: yn("Yes, active", "Informal", "No"), fix: "Recruit 2–3 advisors from your industry." },
 
   { id: "dc_deck", pillar: "documentation", text: "Do you have a current pitch deck?",
-    options: yn("Yes, updated this quarter", "Out of date", "No"), fix: "Build a 12-slide deck.", service: { label: "Pitch Deck", href: "/services#pitch_deck" } },
+    options: yn("Yes, updated this quarter", "Out of date", "No"), fix: "Build a 12-slide deck.", service: { label: "Pitch Deck", href: "/services/pitch_deck" } },
   { id: "dc_plan", pillar: "documentation", text: "Do you have a business plan?",
-    options: yn("Yes, current", "Outdated or partial", "No"), fix: "Most lenders and grants ask for a business plan.", service: { label: "Business Plan", href: "/services#business_plan" } },
+    options: yn("Yes, current", "Outdated or partial", "No"), fix: "Most lenders and grants ask for a business plan.", service: { label: "Business Plan", href: "/services/business_plan" } },
   { id: "dc_dataroom", pillar: "documentation", text: "Are your key documents organized in one place (cap table, incorporation, contracts)?",
-    options: yn("Yes, a data room", "Scattered", "No"), fix: "Set up a data room before investor meetings.", service: { label: "Data Room", href: "/services#data_room" } },
+    options: yn("Yes, a data room", "Scattered", "No"), fix: "Set up a data room before investor meetings.", service: { label: "Data Room", href: "/services/data_room" } },
 
   { id: "cl_corp", pillar: "compliance", text: "Is the business incorporated, with a CRA business number and taxes filed?",
     options: yn("Yes, all current", "Partly", "No"), fix: "Incorporate and get current on filings — most programs require it." },
   { id: "cl_ip", pillar: "compliance", text: "Is your IP protected and are key contracts in writing?",
-    options: yn("Yes", "Partly", "No"), fix: "Assign IP to the company and paper key agreements.", service: { label: "Legal & CPA Review", href: "/services#legal_cpa_review" } },
+    options: yn("Yes", "Partly", "No"), fix: "Assign IP to the company and paper key agreements.", service: { label: "Legal & CPA Review", href: "/services/legal_cpa_review" } },
 ];
 
 export type Answers = Record<string, number | string>; // question id -> option index; "stage" -> stage id

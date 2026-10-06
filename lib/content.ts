@@ -15,19 +15,12 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export const getPartnerLogos = () =>
-  safe(async () => {
-    const s = await createClient();
-    const { data } = await s.from("partner_logos").select("id, name, logo_url, website").eq("published", true).order("sort_order");
-    return data ?? [];
-  }, [] as { id: string; name: string; logo_url: string | null; website: string | null }[]);
-
 export const getTestimonials = () =>
   safe(async () => {
     const s = await createClient();
-    const { data } = await s.from("testimonials").select("id, quote, attribution").order("sort_order").limit(6);
+    const { data } = await s.from("testimonials").select("id, quote, attribution, photo_url").order("sort_order").limit(9);
     return data ?? [];
-  }, [] as { id: string; quote: string; attribution: string }[]);
+  }, [] as { id: string; quote: string; attribution: string; photo_url: string | null }[]);
 
 export const getTeam = () =>
   safe(async () => {

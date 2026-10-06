@@ -1,0 +1,26 @@
+name: App cron jobs
+# Vercel Hobby only allows daily crons, so GitHub Actions calls the cron endpoints instead.
+# GitHub may delay scheduled runs by a few minutes under load.
+# Needs repository secret CRON_SECRET (same value as in Vercel) and repository variable APP_URL (e.g. https://fundinglab.ca).
+on:
+  schedule:
+    - cron: "*/5 * * * *" # notifications
+    - cron: "7 * * * *" # hourly jobs
+  workflow_dispatch:
+    inputs:
+      job: { description: "notifications or hourly", required: true, default: notifications }
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          APP_URL: ${{ vars.APP_URL }}
+          JOB: ${{ inputs.job || (github.event.schedule == '7 * * * *' && 'hourly' || 'notifications') }}
+        run: |
+          curl --fail-with-body -sS --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/$JOB"

@@ -28,7 +28,7 @@ export default async function ProgramsAdmin({ searchParams }: { searchParams: Pr
           {sp.edit !== "new" && (
             <form action={uploadGuide} className="flex flex-wrap items-end gap-2 border-t border-line pt-3">
               <input type="hidden" name="program_id" value={sp.edit} />
-              <label className="field">Guide PDF (shows only “Funding Lab Team · fundinglab.ca@gmail.com” as contact)<input type="file" name="file" accept="application/pdf" required className="text-sm" /></label>
+              <label className="field">Guide PDF (contact shown should be “Funding Lab Team” and the website Contact page only)<input type="file" name="file" accept="application/pdf" required className="text-sm" /></label>
               <button className="btn-secondary btn-sm">Upload guide</button>
               {(editing as { guide_pdf_path?: string }).guide_pdf_path && <span className="pill-success">Guide on file</span>}
             </form>

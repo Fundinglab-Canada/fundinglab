@@ -6,7 +6,8 @@ import { GrantTeaser } from "@/components/grants/grant-teaser";
 import { EventTime } from "@/components/local-time";
 import { FUNDING_PATHS, PAIN_POINTS, SERVICES, STAGES, stageName } from "@/lib/constants";
 import { getFeaturedPrograms } from "@/lib/programs/queries";
-import { getOpenCohort, getPartnerLogos, getTestimonials, getUpcomingWebinars, nextTuesdayPt } from "@/lib/content";
+import { getOpenCohort, getSiteContent, getTestimonials, getUpcomingWebinars, nextTuesdayPt } from "@/lib/content";
+import { HomeVideo, HomeWalkthrough } from "@/components/home-walkthrough";
 
 export const metadata = { title: { absolute: "Funding Lab — Find the right funding for your business" } };
 
@@ -21,8 +22,8 @@ const JOURNEY: Record<string, string[]> = {
 };
 
 export default async function HomePage() {
-  const [featured, logos, testimonials, webinars, cohort] = await Promise.all([
-    getFeaturedPrograms(), getPartnerLogos(), getTestimonials(), getUpcomingWebinars(1), getOpenCohort(),
+  const [featured, testimonials, webinars, cohort, videoUrl] = await Promise.all([
+    getFeaturedPrograms(), getTestimonials(), getUpcomingWebinars(1), getOpenCohort(), getSiteContent("home_video_url", ""),
   ]);
   const nextWebinar = webinars[0]?.starts_at ?? nextTuesdayPt().toISOString();
 
@@ -63,7 +64,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured grants (directly under the hero) */}
+      {/* Short walkthrough: how to use the site and apply */}
+      <section className="container grid items-center gap-8 py-12 lg:grid-cols-[.8fr_1.2fr]">
+        <div className="flex flex-col gap-3">
+          <span className="eyebrow">Watch: 30 seconds</span>
+          <h2 className="text-3xl font-bold">How to find your funding and apply</h2>
+          <p className="text-subtle">See how to create your profile, check your grant history, get your readiness score, and apply with the Funding Lab Team.</p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link href="/signup" className="btn-cta justify-center">Create free profile</Link>
+            <Link href="/assessment" className="btn-secondary justify-center">Take the Funding Check</Link>
+          </div>
+        </div>
+        {videoUrl.trim() ? <HomeVideo url={videoUrl.trim()} /> : <HomeWalkthrough />}
+      </section>
+
+      {/* Featured grants */}
       {featured.length > 0 && (
         <section className="container flex flex-col gap-5 py-12">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -71,23 +86,6 @@ export default async function HomePage() {
             <Link href="/grants" className="btn-secondary">All grants</Link>
           </div>
           <div className="grid gap-5 md:grid-cols-2">{featured.map((p) => <FeaturedGrantCard key={p.id} p={p} />)}</div>
-        </section>
-      )}
-
-      {/* Trust strip: hidden until admin adds a logo */}
-      {logos.length > 0 && (
-        <section className="container flex flex-col gap-3 pb-6">
-          <span className="text-sm font-semibold text-subtle">Working with</span>
-          <div className="flex flex-wrap items-center gap-6">
-            {logos.map((l) =>
-              l.logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={l.id} src={l.logo_url} alt={l.name} className="h-10 w-auto object-contain opacity-80" />
-              ) : (
-                <span key={l.id} className="font-display text-lg font-bold text-ink">{l.name}</span>
-              ),
-            )}
-          </div>
         </section>
       )}
 
@@ -154,11 +152,12 @@ export default async function HomePage() {
           <div><span className="eyebrow">The 7 funding paths</span><h2 className="mt-1 text-3xl font-bold">Know which money fits your stage</h2></div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FUNDING_PATHS.map((p) => (
-              <Link key={p.id} href={`/funding-paths/${p.slug}`} className="card flex flex-col gap-2 hover:border-brand-text">
+              <Link key={p.id} href={`/assessment?path=${p.slug}`} className="card flex flex-col gap-2 hover:border-brand-text">
                 <span className="grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-text"><Icon name={p.icon} /></span>
                 <h3 className="text-lg font-bold">{p.name}</h3>
                 <p className="text-sm text-subtle">{p.who}</p>
                 <div className="mt-auto flex flex-wrap gap-1 pt-1">{p.stages.map((s) => <span key={s} className="pill">{stageName(s)}</span>)}</div>
+                <span className="text-sm font-semibold text-brand-text">Check if it fits me →</span>
               </Link>
             ))}
           </div>
@@ -187,7 +186,7 @@ export default async function HomePage() {
               <div key={s.kind} className="card flex flex-col gap-2">
                 <h3 className="text-lg font-bold">{s.name}</h3>
                 <p className="text-sm text-subtle">{s.promise}</p>
-                <Link href={`/services#${s.kind}`} className="btn-ghost mt-auto self-start">Get started →</Link>
+                <Link href={`/services/${s.kind}#quote`} className="btn-ghost mt-auto self-start">Get a quote →</Link>
               </div>
             ))}
           </div>
@@ -196,24 +195,36 @@ export default async function HomePage() {
 
       {/* For funders and experts */}
       <section className="container py-14">
-        <div className="card flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">For funders &amp; experts</h2>
-            <p className="text-subtle">Are you an investor, lender, grant writer or advisor? Join our private partner network.</p>
+        <div className="flex flex-col items-start gap-4 rounded-xl border-2 border-brand bg-brand-soft p-6 md:flex-row md:items-center md:justify-between md:p-8">
+          <div className="flex flex-col gap-1">
+            <span className="eyebrow">For funders &amp; experts</span>
+            <h2 className="text-2xl font-bold md:text-3xl">Become a Funding Lab Partner</h2>
+            <p className="max-w-xl text-body">Investors, lenders, grant writers, lawyers, CPAs and growth experts: get curated, pre-vetted deal flow from Canadian businesses that are ready to fund.</p>
           </div>
-          <Link href="/partners/join" className="btn-secondary">Become a Partner</Link>
+          <Link href="/partners/join" className="btn-cta shrink-0 px-6 py-3 text-base">Become a Partner</Link>
         </div>
       </section>
 
       {/* Testimonials: hidden until consented content exists */}
       {testimonials.length > 0 && (
-        <section className="container grid gap-8 pb-6 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <figure key={t.id} className="flex flex-col gap-3">
-              <blockquote className="text-[17px] text-ink">“{t.quote}”</blockquote>
-              <figcaption className="text-sm text-subtle">{t.attribution}</figcaption>
-            </figure>
-          ))}
+        <section className="container flex flex-col gap-6 pb-6">
+          <div><span className="eyebrow">Client stories</span><h2 className="mt-1 text-3xl font-bold">What business owners say</h2></div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((t) => (
+              <figure key={t.id} className="card flex flex-col gap-4">
+                <blockquote className="text-[17px] text-ink">“{t.quote}”</blockquote>
+                <figcaption className="mt-auto flex items-center gap-3 text-sm text-subtle">
+                  {t.photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={t.photo_url} alt="" className="h-12 w-12 rounded-full object-cover" loading="lazy" />
+                  ) : (
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-brand-soft font-bold text-brand-text" aria-hidden>{t.attribution.trim().charAt(0)}</span>
+                  )}
+                  {t.attribution}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </section>
       )}
 

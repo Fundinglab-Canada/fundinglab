@@ -21,9 +21,7 @@ export const step1Schema = z.object({
   province: z.enum(PROVINCES),
   city: z.string().trim().min(1, "Enter your city.").max(80),
   annual_revenue: optNum(money),
-  contact_name: z.string().trim().min(1, "Enter a contact name.").max(120),
-  contact_email: z.string().trim().email("Enter a valid email address."),
-  contact_phone: optionalText(40),
+  industry_other: optionalText(120),
   legal_structure: z.enum(ids(LEGAL_STRUCTURES), { errorMap: () => ({ message: "Choose your legal structure." }) }),
   incorporation_province: z.enum(PROVINCES).optional().or(z.literal("")).transform((v) => v || null),
   naics_code: z.string().trim().regex(/^\d{2,6}$/, "NAICS codes are 2–6 digits.").optional().or(z.literal("")).transform((v) => v || null),
@@ -31,7 +29,7 @@ export const step1Schema = z.object({
   revenue_band: z.enum(ids(REVENUE_BANDS)).optional().or(z.literal("")).transform((v) => v || null),
   ownership_tags: z.array(z.enum(ids(OWNERSHIP_TAGS))).default([]),
   description: z.string().trim().max(1200, "Keep the description under 1,200 characters.").optional().transform((v) => v || null),
-});
+}).refine((d) => d.industry !== "other" || !!d.industry_other, { message: "Tell us your industry.", path: ["industry_other"] })
 
 export const step2Schema = z.object({
   stage: z.enum(ids(STAGES), { errorMap: () => ({ message: "Choose the stage that best describes your business today." }) }),

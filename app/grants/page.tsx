@@ -85,7 +85,7 @@ export default async function GrantsHub({ searchParams }: { searchParams: Promis
                 <summary className="cursor-pointer list-none font-semibold text-ink">{q}<span className="float-right text-subtle group-open:rotate-45">+</span></summary>
                 <p className="mt-2 text-body">{a}</p>
                 {q.startsWith("Reimbursement") && <Link href="/funding-paths/business-loans" className="mt-1 inline-block text-sm font-semibold text-brand-text underline">Bridge financing →</Link>}
-                {q.startsWith("Reporting") && <Link href="/services#grant_writing" className="mt-1 inline-block text-sm font-semibold text-brand-text underline">Get help with claims and reporting →</Link>}
+                {q.startsWith("Reporting") && <Link href="/services/grant_writing" className="mt-1 inline-block text-sm font-semibold text-brand-text underline">Get help with claims and reporting →</Link>}
               </details>
             ))}
           </div>
@@ -152,7 +152,7 @@ export default async function GrantsHub({ searchParams }: { searchParams: Promis
                 <li key={s} className="flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-navy text-xs font-bold text-white">{i + 1}</span><span className="font-medium text-ink">{s}</span></li>
               ))}
             </ol>
-            <p className="text-subtle">Services: <Link className="underline" href="/services#grant_writing">Grant Writing</Link> · <Link className="underline" href="/services#business_plan">Business Plan</Link> · <Link className="underline" href="/services#data_room">Data Room</Link></p>
+            <p className="text-subtle">Services: <Link className="underline" href="/services/grant_writing">Grant Writing</Link> · <Link className="underline" href="/services/business_plan">Business Plan</Link> · <Link className="underline" href="/services/data_room">Data Room</Link></p>
             <Link href="/webinar" className="text-sm font-semibold text-brand-text underline">Join the Free Funding Webinar (Tuesdays 8 AM PT)</Link>
           </div>
           <div id="fit-call" className="card scroll-mt-24 flex flex-col gap-3">

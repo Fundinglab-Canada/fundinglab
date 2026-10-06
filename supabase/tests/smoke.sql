@@ -58,7 +58,24 @@ do $$ begin
   assert (select count(*) from public.matches) = 0;
 end $$;
 
--- Share link with password
+-- Share links and visibility are admin-only
+do $$ begin
+  begin
+    perform public.fl_create_share_link('10000000-0000-0000-0000-000000000001', 'Owner link');
+    raise exception 'owner must not create share links';
+  exception when raise_exception then
+    if sqlerrm = 'owner must not create share links' then raise; end if;
+  end;
+  begin
+    update public.businesses set visibility = 'private' where id = '10000000-0000-0000-0000-000000000001';
+    raise exception 'owner must not change visibility';
+  exception when raise_exception then
+    if sqlerrm = 'owner must not change visibility' then raise; end if;
+  end;
+end $$;
+
+-- Share link with password (created by the admin)
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', true);
 do $$ declare t text; r jsonb; begin
   select token into t from public.fl_create_share_link('10000000-0000-0000-0000-000000000001', 'Test VC', now() + interval '7 days', 's3cret');
   r := public.fl_open_share('northwind-robotics', t, null);

@@ -7,9 +7,9 @@ export function FeaturedGrantCard({ p }: { p: ProgramRow }) {
   const status = programStatus(p);
   const amount = p.content?.keyNumbers?.[0];
   return (
-    <article className="card flex flex-col gap-3">
+    <article className="card flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="pill-info">{p.badge}</span>
+        <span className="pill-info whitespace-normal">{p.badge}</span>
         {p.close_at && !status.closed ? <Countdown to={p.close_at} label="Closes in" /> : <span className={status.closed ? "pill-warning" : "pill-success"}>{status.text.split("·")[0]}</span>}
       </div>
       <h3 className="text-xl font-bold">{p.headline}</h3>

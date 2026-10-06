@@ -10,12 +10,12 @@ export const metadata = { title: "Site content" };
 const TABS: { id: AdminTable; label: string; order: string; title: (r: Record<string, unknown>) => string }[] = [
   { id: "team_members", label: "Team", order: "sort_order", title: (r) => `${r.name} — ${r.title}` },
   { id: "announcements", label: "Announcements", order: "sort_order", title: (r) => String(r.message) },
-  { id: "partner_logos", label: "Partner logos", order: "sort_order", title: (r) => String(r.name) },
   { id: "testimonials", label: "Testimonials", order: "sort_order", title: (r) => `“${String(r.quote).slice(0, 60)}…” — ${r.attribution}` },
 ];
 const KEYS = [
   { key: "about_story", label: "About page story" },
   { key: "cohort_refund_policy", label: "Road to Funding refund policy" },
+  { key: "home_video_url", label: "Homepage “How it works” video URL (YouTube or .mp4). Leave empty to show the animated walkthrough." },
 ];
 
 export default async function ContentAdmin({ searchParams }: { searchParams: Promise<{ tab?: string; saved?: string; error?: string }> }) {
@@ -28,7 +28,7 @@ export default async function ContentAdmin({ searchParams }: { searchParams: Pro
   return (
     <>
       <h1 className="text-3xl font-bold">Site content</h1>
-      <p className="text-sm text-subtle">Public sections stay hidden until content exists. Never publish a person&apos;s phone number or personal email as a contact; the public contact is always “Funding Lab Team · fundinglab.ca@gmail.com”.</p>
+      <p className="text-sm text-subtle">Public sections stay hidden until content exists. Never publish a person&apos;s phone number or personal email as a contact; the public contact is always “Funding Lab Team” and the website Contact page.</p>
       <div className="flex flex-wrap gap-1">{[...TABS.map((t) => [t.id, t.label]), ["text", "Page text"]].map(([id, label]) => <Link key={id} href={`?tab=${id}`} className={(tab?.id ?? "text") === id ? "pill-success" : "pill"}>{label}</Link>)}</div>
       <AdminNotice sp={sp} />
       {tab ? (

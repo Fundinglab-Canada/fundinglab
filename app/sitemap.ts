@@ -1,16 +1,17 @@
 import type { MetadataRoute } from "next";
-import { FUNDING_PATHS } from "@/lib/constants";
+import { FUNDING_PATHS, SERVICES } from "@/lib/constants";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fundinglab.ca";
-  const fixed = ["", "/grants", "/funding-paths", "/webinar", "/road-to-funding", "/assessment", "/services", "/services/hiring", "/services/development", "/services/marketing",
+  const fixed = ["", "/grants", "/funding-paths", "/webinar", "/road-to-funding", "/assessment", "/services",
     "/partners/join", "/about", "/contact", "/careers", "/privacy", "/terms"];
   const entries: MetadataRoute.Sitemap = [
     ...fixed.map((p) => ({ url: `${base}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 })),
     ...FUNDING_PATHS.map((p) => ({ url: `${base}/funding-paths/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.6 })),
+    ...SERVICES.map((s) => ({ url: `${base}/services/${s.kind}`, changeFrequency: "monthly" as const, priority: 0.6 })),
   ];
   try {
     const db = createAdminClient();

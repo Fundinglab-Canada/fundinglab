@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 /**
- * Hourly jobs (vercel.json, minute 7). Protected by CRON_SECRET.
+ * Hourly jobs (.github/workflows/cron.yml, minute 7). Protected by CRON_SECRET.
  * 1. Keep 8 weeks of Tuesday webinar sessions scheduled.
  * 2. Webinar reminders: 24 h and 1 h before (email; SMS if opted in), follow-up with replay 2 h after.
  * 3. Expire unanswered introductions (14 days) and send the day-7 reminder.

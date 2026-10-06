@@ -1,9 +1,10 @@
+import { serviceName } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import { dateShort } from "@/lib/format";
 import { updateLead } from "../actions";
 
 export const metadata = { title: "Leads" };
-const KINDS = ["fit_call", "quick_check", "grant_teaser", "assessment", "guide_download", "service_quote"];
+const KINDS = ["meeting", "fit_call", "quick_check", "grant_teaser", "assessment", "guide_download", "service_quote"];
 const STATUSES = ["new", "contacted", "qualified", "converted", "closed"];
 
 export default async function LeadsAdmin({ searchParams }: { searchParams: Promise<{ kind?: string; status?: string }> }) {
@@ -31,6 +32,9 @@ export default async function LeadsAdmin({ searchParams }: { searchParams: Promi
                   <span className="block text-[13px] text-subtle">{[l.email, l.phone, l.city].filter(Boolean).join(" · ")} · {dateShort(l.created_at)}{program ? ` · ${program.name}` : ""}{l.source_page ? ` · ${l.source_page}` : ""}</span></span>
                 {l.score != null && <span className="pill-info num">Score {l.score}{l.result_band ? ` · ${l.result_band}` : ""}</span>}
               </div>
+              {l.kind === "meeting" && (
+                <p className="text-sm text-ink">15-min meeting{l.answers?.service ? ` · ${serviceName(String(l.answers.service))}` : ""} · <b>Preferred time:</b> {String(l.answers?.preferred_time ?? "—")}</p>
+              )}
               {l.project_description && <p className="text-sm text-body">{l.project_description}</p>}
               <form action={updateLead} className="flex flex-wrap items-end gap-2 border-t border-line pt-2">
                 <input type="hidden" name="id" value={l.id} />

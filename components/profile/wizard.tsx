@@ -4,14 +4,14 @@ import { useActionState, useCallback, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import {
-  CONSENT, FUNDING_SOURCES, FUNDING_STATUSES, INDUSTRIES, LEGAL_STRUCTURES, LOAN_SUBTYPES, OWNERSHIP_TAGS, PROVINCES, REVENUE_BANDS, STAGES, USES_OF_FUNDS,
+  CONSENT, PROFILE_STEP_COUNT, FUNDING_SOURCES, FUNDING_STATUSES, INDUSTRIES, LEGAL_STRUCTURES, LOAN_SUBTYPES, OWNERSHIP_TAGS, PROVINCES, REVENUE_BANDS, STAGES, USES_OF_FUNDS,
 } from "@/lib/constants";
 import { money } from "@/lib/format";
 import type { Business, DocumentRow, FundingHistoryRow } from "@/lib/types";
 import { saveBasics, saveConsent, saveHistory, saveNeed, saveStage, saveTraction, type StepState } from "@/app/app/profile/actions";
 import { GrantLookupField } from "./grant-lookup";
 
-export const STEP_COUNT = 6;
+const STEP_COUNT = PROFILE_STEP_COUNT;
 const STEP_NAMES = ["Basics", "Stage", "Funding need", "History", "Traction", "Documents"];
 const TITLES = [
   "Tell us about your business", "Where are you today?", "How much, and for what?", "What have you raised so far?",
@@ -66,9 +66,10 @@ function FormError({ state }: { state: StepState }) {
 const fe = (state: StepState, key: string) => (state?.fieldErrors?.[key] ? <span className="error">{state.fieldErrors[key]}</span> : null);
 
 // ---------------------------------------------------------------- Step 1 · Basics
-export function StepBasics({ business, defaults }: { business: Business | null; defaults: { name: string; email: string } }) {
+export function StepBasics({ business }: { business: Business | null }) {
   const [state, action] = useActionState(saveBasics, undefined);
   const b = business;
+  const [industry, setIndustry] = useState(b?.industry ?? "");
   const getPlace = useCallback(() => {
     const v = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null)?.value || null;
     return { province: v("province"), city: v("city"), businessNumber: v("business_number") };
@@ -98,11 +99,14 @@ export function StepBasics({ business, defaults }: { business: Business | null; 
         </label>
         <label className="field">City<input id="city" name="city" defaultValue={b?.city ?? ""} autoComplete="address-level2" className="input" />{fe(state, "city")}</label>
         <label className="field">Industry / sector
-          <select name="industry" defaultValue={b?.industry ?? ""} className="input">
+          <select name="industry" value={industry} onChange={(e) => setIndustry(e.target.value)} className="input">
             <option value="">Select…</option>
-            {INDUSTRIES.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}
+            {INDUSTRIES.map((i) => <option key={i.id} value={i.id}>{i.id === "other" ? "Other (please specify)" : i.label}</option>)}
           </select>{fe(state, "industry")}
         </label>
+        {industry === "other" && (
+          <label className="field">Your industry<input name="industry_other" defaultValue={b?.industry_other ?? ""} maxLength={120} placeholder="e.g. Aquaculture" className="input" />{fe(state, "industry_other")}</label>
+        )}
         <label className="field">NAICS code (optional)<input name="naics_code" defaultValue={b?.naics_code ?? ""} inputMode="numeric" className="input" />
           <span className="help">2–6 digits. Helps match industry-specific programs.</span>{fe(state, "naics_code")}</label>
         <label className="field">Website<input name="website" defaultValue={b?.website ?? ""} placeholder="yourcompany.ca" className="input" /></label>
@@ -132,11 +136,6 @@ export function StepBasics({ business, defaults }: { business: Business | null; 
           ))}
         </div>
       </fieldset>
-      <div className="grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
-        <label className="field">Contact name<input name="contact_name" defaultValue={b?.contact_name ?? defaults.name} autoComplete="name" className="input" />{fe(state, "contact_name")}</label>
-        <label className="field">Email<input name="contact_email" type="email" defaultValue={b?.contact_email ?? defaults.email} autoComplete="email" className="input" />{fe(state, "contact_email")}</label>
-        <label className="field">Phone<input name="contact_phone" type="tel" defaultValue={b?.contact_phone ?? ""} autoComplete="tel" className="input" /></label>
-      </div>
       <Footer step={1} />
     </form>
   );
@@ -338,7 +337,7 @@ export function StepConsent({ business, documents }: { business: Business; docum
       {missing && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-brand-soft p-4">
           <span><b className="text-ink">Need a Business Plan or Pitch Deck? We can build it.</b><span className="block text-sm text-subtle">Fixed-scope, delivered by the Funding Lab Team and vetted partners.</span></span>
-          <Link href="/app/services#business_plan" className="btn-secondary btn-sm">See services</Link>
+          <Link href="/services/business_plan" className="btn-secondary btn-sm">See services</Link>
         </div>
       )}
       <div className="flex flex-col gap-3">

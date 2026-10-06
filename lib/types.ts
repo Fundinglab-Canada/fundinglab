@@ -21,6 +21,7 @@ export type Business = {
   business_number: string | null;
   years_in_business: number | null;
   industry: string | null;
+  industry_other: string | null;
   province: string | null;
   city: string | null;
   contact_name: string | null;
@@ -75,7 +76,7 @@ export type FundingHistoryRow = {
 export type DocumentRow = {
   id: string;
   business_id: string;
-  kind: "pitch_deck" | "financials" | "business_plan" | "tax_returns" | "cap_table" | "incorporation" | "other";
+  kind: "pitch_deck" | "financials" | "business_plan" | "tax_returns" | "cap_table" | "incorporation" | "registration_noa" | "other";
   storage_path: string;
   file_name: string;
   size_bytes: number | null;

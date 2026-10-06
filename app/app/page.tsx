@@ -64,7 +64,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
         <div className="flex gap-2">
           <Link href="/app/profile" className="btn-secondary">Edit profile</Link>
-          <Link href="/app/share" className="btn-primary">Shareable profile</Link>
+          <Link href="/app/share" className="btn-primary">Investor snapshot</Link>
         </div>
       </div>
 
@@ -148,7 +148,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <h2 className="text-lg font-bold">Recommended for you</h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             {[...recServices, ...docServices].map((s) => (
-              <Link key={s.kind} href={"href" in s ? `${s.href}?from=dashboard` : `/app/services#${s.kind}`} className="flex flex-col gap-1 rounded-lg border border-line p-3 hover:border-brand">
+              <Link key={s.kind} href={`/services/${s.kind}?from=dashboard`} className="flex flex-col gap-1 rounded-lg border border-line p-3 hover:border-brand">
                 <b className="text-ink">{s.name}</b><span className="text-[13px] text-subtle">{s.promise}</span>
                 <span className="mt-auto pt-2 text-sm font-semibold text-brand-text">Get a quote</span>
               </Link>

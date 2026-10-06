@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { BRAND } from "@/lib/constants";
-import { CopyEmail } from "./copy-email";
 
 export async function SiteFooter() {
   const t = await getTranslations("footer");
@@ -18,7 +17,7 @@ export async function SiteFooter() {
           <div className="flex flex-col gap-2">
             <span className="font-display text-xl font-extrabold">{BRAND.name}</span>
             <span className="text-white/80">{BRAND.tagline}</span>
-            <span className="mt-2 text-sm text-white/90">{BRAND.contactName} · <CopyEmail email={BRAND.contactEmail} className="text-white underline" /></span>
+            <span className="mt-2 text-sm text-white/90">{BRAND.contactName} · <Link href="/contact" className="text-white underline">Send us a message</Link></span>
           </div>
           {COLUMNS.map(([title, links]) => (
             <nav key={title} className="flex flex-col gap-1.5 text-sm" aria-label={title}>

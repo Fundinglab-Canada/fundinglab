@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <h2 className="text-xl font-bold">Security</h2>
       <p>Documents are stored in a private, encrypted bucket. Access is role-based, enforced in the database, and logged. Share-link analytics store a one-way hash of the viewer&apos;s IP address, never the address itself.</p>
       <h2 className="text-xl font-bold">Your rights</h2>
-      <p>You can ask to see, correct or delete your information. Contact us using the details below.</p>
+      <p>You can ask to see, correct or delete your information. Send your request through the <a href="/contact" className="underline">Contact page</a>.</p>
       <p className="num text-sm text-subtle">{BRAND.contactLine}</p>
     </section>
   );

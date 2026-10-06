@@ -33,7 +33,8 @@ export const ADMIN_TABLES = {
     label: "Testimonial",
     fields: [
       { name: "quote", label: "Quote", type: "textarea", required: true, wide: true },
-      { name: "attribution", label: "Attribution", type: "text", required: true },
+      { name: "attribution", label: "Attribution", type: "text", required: true, help: "Name, role and business, e.g. “Priya S., Founder, Maple Pantry Foods”" },
+      { name: "photo_url", label: "Photo or avatar URL", type: "url", help: "Client photo, or an AI-generated avatar if the client prefers not to show a photo." },
       { name: "sort_order", label: "Order", type: "int" },
       { name: "consent_on_file", label: "Written consent on file", type: "bool" },
       { name: "published", label: "Published", type: "bool" },

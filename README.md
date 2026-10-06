@@ -43,16 +43,16 @@ npm run etl:grants          # full file, ~1.3M rows (10–30 min)
 
 | Area | Where |
 |---|---|
-| Public site: Home, About (team from DB, bios "[Bio to be added]"), Contact form → team inbox, Careers + applications, Funding Paths, Services (Get Funded / Grow With Your Funding + quote forms), Privacy, Terms | `app/page.tsx`, `app/(legal)`, `app/contact`, `app/careers`, `app/funding-paths`, `app/services` |
+| Public site: Home, About (team from DB, bios "[Bio to be added]"), Contact form → team inbox, Careers + applications, Funding Paths, Services (11 quote-based services, each with its own page: requirement form → quote, book a 15-minute meeting, Pay now for agreed quotes; Grant Writing adds trending grants by province and the Business Benefits Finder), homepage walkthrough video, Privacy, Terms | `app/page.tsx`, `app/(legal)`, `app/contact`, `app/careers`, `app/funding-paths`, `app/services` |
 | Grants Hub: featured grants, Grants 101, embedded ISED finder (with fallback), program search, grant-history teaser, fit-call booking | `app/grants`, `components/grants/*` |
 | Featured grant pages (REDIP, RTRI): quick checks, calculators, guide download, fit call, admin-editable JSON blocks | `app/grants/[slug]`, `content/programs/*`, `lib/programs/*` |
 | Free Funding Webinar: Tuesday 8 AM PT sessions, countdown, registration, .ics + Google Calendar, 24 h / 1 h reminders (email + opt-in SMS), follow-up, member-only replays | `app/webinar`, `app/api/webinar/[id]/ics`, `app/api/cron/hourly` |
 | Road to Funding cohort: curriculum, seats, waitlist, intake, Stripe checkout ($499 CAD + optional Stripe Tax), webhook enrollment with 8 calendar invites, member space (sessions, homework, discussion) | `app/road-to-funding`, `app/app/cohort`, `app/api/stripe/webhook` |
 | Readiness assessment: 21 questions, 6 weighted pillars, visitor teaser → full report after signup (answers carried over) | `app/assessment`, `app/app/assessment`, `lib/assessment.ts` |
 | Auth & onboarding: email + password, magic link, Google, LinkedIn (OIDC), password reset, one-time onboarding | `app/signup`, `app/login`, `app/onboarding`, `app/auth/*` |
-| Business app: dashboard (journey, readiness, verified grants, introductions, webinar, cohort offer, recommended services, completeness checklist), 6-step profile with 600 ms debounced grant lookup, introductions, shareable profile, services, settings (consents, data export, account deletion) | `app/app/*`, `components/profile/*` |
+| Business app: dashboard (journey, readiness, verified grants, introductions, webinar, cohort offer, recommended services, completeness checklist), 6-step profile with real-time company search of Government of Canada grant records (search.open.canada.ca, live) plus the local mirror, introductions, investor snapshot with written summary (contact details confirmed first), services + Pay now, settings (consents, data export, account deletion) | `app/app/*`, `components/profile/*` |
 | Partner app: application with role-specific fields (13 types) + confidentiality commitment, anonymized deal flow (Interested / Pass), introductions, profile, membership | `app/partners/join`, `app/partner/*` |
-| Admin: KPIs + funnel, matching (per business + review queue), pipeline (8 stages), businesses, partner approvals, service requests, leads, messages, webinar & cohorts (sessions, enrollments, attendance), programs CMS (JSON blocks, guide PDFs, re-verification), careers (jobs, applicants, signed resume links), site content, audit log, CSV exports, admin guide | `app/admin/*` |
+| Admin: KPIs + funnel, matching (per business + review queue), pipeline (8 stages), businesses (per-business page with visibility and tracked share links — admin-only), partner approvals, service requests, leads, messages, webinar & cohorts (sessions, enrollments, attendance), programs CMS (JSON blocks, guide PDFs, re-verification), careers (jobs, applicants, signed resume links), site content, audit log, CSV exports, admin guide | `app/admin/*` |
 | Email notifications outbox → Resend | `fl_notify()` in SQL, `app/api/cron/notifications`, `lib/email.ts` |
 | Database: schema, RLS, RPCs, storage buckets, grants mirror | `supabase/migrations/*` |
 | i18n: chrome strings (brand, CTA, consent, nav, footer) in `messages/en.json` via next-intl | `messages/`, `i18n/request.ts` |
@@ -112,7 +112,7 @@ The assessment score (6 pillars: Business Model 20, Traction 20, Financials 20, 
 | every 5 min | `/api/cron/notifications` | Drains the `notifications` outbox to email (introductions, approvals, etc.) |
 | hourly (:07) | `/api/cron/hourly` | Keeps 8 weeks of Tuesday webinar sessions; 24 h / 1 h reminders and post-webinar follow-up; expires introductions and sends day-7 reminders; releases unpaid cohort seats after 2 h; purges job applications past retention (with files) |
 
-Both are scheduled in `vercel.json` and require `Authorization: Bearer $CRON_SECRET` (Vercel Cron sends it automatically when `CRON_SECRET` is set). If `pg_cron` is enabled in Supabase, the migration also schedules webinar session creation in the database.
+Both are scheduled by `.github/workflows/cron.yml` (Vercel Hobby only allows daily crons) and require `Authorization: Bearer $CRON_SECRET`. Set repository secret `CRON_SECRET` (same value as Vercel) and repository variable `APP_URL`. If `pg_cron` is enabled in Supabase, the migration also schedules webinar session creation in the database.
 
 ## Stripe
 

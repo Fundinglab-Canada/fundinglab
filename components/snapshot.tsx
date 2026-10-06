@@ -1,10 +1,12 @@
-import { BRAND, industryLabel, sourceLabel, stageName, useLabel } from "@/lib/constants";
+import { BRAND, sourceLabel, stageName, useLabel } from "@/lib/constants";
+import { industryText } from "@/lib/snapshot-summary";
 import { money } from "@/lib/format";
 
 export type SnapshotData = {
   name: string;
   website: string | null;
   industry: string | null;
+  industry_other?: string | null;
   province: string | null;
   city: string | null;
   years_in_business: number | null;
@@ -27,11 +29,11 @@ export type SnapshotData = {
 };
 
 /** One-page investor snapshot. Shared by the owner preview and the public /b/[slug] link. Prints cleanly to PDF. */
-export function InvestorSnapshot({ s }: { s: SnapshotData }) {
+export function InvestorSnapshot({ s, summary }: { s: SnapshotData; summary?: string[] }) {
   const raised = s.funding_history.reduce((t, h) => t + Number(h.amount), 0);
   const kv: [string, string][] = [
     ["Stage", stageName(s.stage)],
-    ["Raising", money(s.amount_sought)],
+    ["Raising", s.amount_sought ? money(s.amount_sought) : "—"],
     ["Timeline", s.timeline ?? "—"],
     ["Raised to date", money(raised)],
     ["Revenue (12 mo)", s.revenue_12m != null ? money(s.revenue_12m) : s.annual_revenue ? money(s.annual_revenue) : "—"],
@@ -41,15 +43,20 @@ export function InvestorSnapshot({ s }: { s: SnapshotData }) {
   ];
   return (
     <article className="mx-auto w-full max-w-[860px] overflow-hidden rounded-xl border border-line bg-surface print:border-0">
-      <header className="flex flex-col gap-2 bg-navy p-7 text-white print:bg-surface print:text-ink">
-        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Shareable profile · Funding Lab</span>
+      <header className="flex flex-col gap-2 bg-navy p-5 text-white sm:p-7 print:bg-surface print:text-ink">
+        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-brand">Investor snapshot · Funding Lab</span>
         <h1 className="text-3xl font-bold text-white print:text-ink">{s.name}</h1>
         <span className="text-white/80 print:text-subtle">
-          {industryLabel(s.industry)} · {s.city}, {s.province}{s.years_in_business != null ? ` · ${s.years_in_business} years` : ""}{s.website ? ` · ${s.website}` : ""}
+          {industryText(s.industry, s.industry_other)} · {s.city}, {s.province}{s.years_in_business != null ? ` · ${s.years_in_business} years` : ""}{s.website ? ` · ${s.website}` : ""}
         </span>
       </header>
-      <div className="grid gap-6 p-7">
-        {s.description && <p className="text-body">{s.description}</p>}
+      <div className="grid gap-6 p-5 sm:p-7">
+        {summary?.length ? (
+          <section className="flex flex-col gap-2 rounded-lg bg-brand-soft p-4 sm:p-5" aria-labelledby="summary-title">
+            <h2 id="summary-title" className="text-lg font-bold">Summary</h2>
+            {summary.map((p, i) => <p key={i} className="text-body">{p}</p>)}
+          </section>
+        ) : s.description && <p className="text-body">{s.description}</p>}
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {kv.map(([k, v]) => (
             <div key={k} className="border-l-2 border-brand pl-3">

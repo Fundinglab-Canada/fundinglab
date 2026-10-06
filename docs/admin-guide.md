@@ -7,13 +7,15 @@ One page for the team. Everything here is enforced by database rules (RLS), not 
 - **Overview** — check *Needs attention*: partner applications, partner interest, new leads, messages, job applications.
 - **Matching → Review queue** — partner interest first, then the strongest engine matches. *Approve intro* only when the fit is real. Approval emails both sides; neither sees the other's identity until **both** accept. Introductions expire after 14 days (reminder at day 7).
 - **Messages** — reply from the team inbox (fundinglab.ca@gmail.com), then mark *replied*.
-- **Leads** — fit-call requests and quick checks from the REDIP / RTRI pages. Call or email within one business day, then set the status.
+- **Leads** — fit-call requests and quick checks from the REDIP / RTRI pages, and **15-minute meeting** requests from service pages (with the visitor's preferred time). Call or email within one business day to confirm, then set the status.
+- **Service requests** — every service is quote-based. Read the requirements, enter the **Quote (CAD)** and set status to *quote sent*: the business then sees a **Pay now** button on their Services page.
 
 ## Weekly
 
 - **Matching → Recompute all** after approving new partners. Score = stage 30 + industry 20 + geography 15 + ticket size 20 + use of funds 10 + readiness bonus 5 (score ≥ 70). Only businesses with matching consent are scored.
 - **Webinar & cohorts** — sessions are created automatically every Tuesday 8:00 AM PT for 8 weeks ahead. Before each session add the **join URL** (it's emailed to registrants only, never shown publicly). After it, add the **replay URL** (members only) — the follow-up email goes out automatically.
 - **Partners** — approve or decline applications. Approval emails the partner. Recruiters, lawyers, CPAs and other service partners are matched on use of funds.
+- **Sharing investor snapshots** — only admins set a business's visibility and create share links: **Businesses → (business) → Sharing**. Choose Link-only (or Partners, if the business consented), create a link per recipient, copy it once, and revoke it when done. Views are tracked per link.
 - **Deal pipeline** — drag deals through New → Introduced → In discussion → Diligence → Term sheet → Approved → Funded / Closed lost. Record the funded amount; the success fee calculates itself.
 
 ## Cohorts (Road to Funding)
@@ -24,7 +26,7 @@ One page for the team. Everything here is enforced by database rules (RLS), not 
 
 ## Programs and featured grants
 
-- **Programs** — *Featured only* shows REDIP and RTRI. Each page section is a JSON block: edit the text, keep the structure. Upload the guide PDF (it must show only “Funding Lab Team · fundinglab.ca@gmail.com” as the contact).
+- **Programs** — *Featured only* shows REDIP and RTRI. Each page section is a JSON block: edit the text, keep the structure. Upload the guide PDF (the contact shown must be “Funding Lab Team” and the website Contact page only — no personal names, numbers or email addresses).
 - **Verify every 90 days**: open the official page, check amounts, deadlines and eligibility, update, then *Mark verified*. Rows flagged amber are overdue. Sample programs are placeholders until replaced.
 
 ## Careers

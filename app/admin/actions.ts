@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { rankPartners } from "@/lib/matching/score";
 import { DEAL_STATUSES } from "@/lib/constants";
 import { EMAIL_TEMPLATES, sendEmail } from "@/lib/email";
+import { shareLinkSchema } from "@/lib/validation";
 
 async function admin() {
   await requireRole("admin", "/admin");
@@ -218,4 +220,39 @@ export async function markVerified(formData: FormData) {
   await supabase.from("programs").update({ last_verified_at: new Date().toISOString().slice(0, 10), verified_by: me?.full_name ?? me?.email ?? "admin" })
     .eq("id", z.string().uuid().parse(formData.get("id")));
   revalidatePath("/admin/programs");
+}
+
+// Investor snapshot sharing (admin-only since Oct 2026; the database enforces it too).
+export async function setBusinessVisibility(formData: FormData) {
+  const supabase = await admin();
+  const id = z.string().uuid().parse(formData.get("business_id"));
+  const visibility = z.enum(["private", "link", "partners"]).parse(formData.get("visibility"));
+  const { data: b } = await supabase.from("businesses").select("consent_sharing").eq("id", id).single();
+  if (visibility === "partners" && !b?.consent_sharing) redirect(`/admin/businesses/${id}?error=${encodeURIComponent("This business hasn't consented to sharing with partners.")}`);
+  await supabase.from("businesses").update({ visibility }).eq("id", id);
+  revalidatePath(`/admin/businesses/${id}`);
+  redirect(`/admin/businesses/${id}?saved=1`);
+}
+
+export async function createBusinessShareLink(formData: FormData) {
+  const supabase = await admin();
+  const id = z.string().uuid().parse(formData.get("business_id"));
+  const parsed = shareLinkSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect(`/admin/businesses/${id}?error=${encodeURIComponent(parsed.error.issues[0].message)}`);
+  const { label, expires_in_days, password } = parsed.data;
+  const { data, error } = await supabase.rpc("fl_create_share_link", {
+    p_business_id: id,
+    p_label: label,
+    p_expires_at: expires_in_days ? new Date(Date.now() + expires_in_days * 864e5).toISOString() : null,
+    p_password: password || null,
+  });
+  if (error || !data?.[0]) redirect(`/admin/businesses/${id}?error=${encodeURIComponent(error?.message ?? "Could not create the link.")}`);
+  redirect(`/admin/businesses/${id}?created=${encodeURIComponent(data[0].token)}`);
+}
+
+export async function revokeBusinessShareLink(formData: FormData) {
+  const supabase = await admin();
+  const id = z.string().uuid().parse(formData.get("business_id"));
+  await supabase.from("share_links").update({ revoked_at: new Date().toISOString() }).eq("id", z.string().uuid().parse(formData.get("id")));
+  revalidatePath(`/admin/businesses/${id}`);
 }

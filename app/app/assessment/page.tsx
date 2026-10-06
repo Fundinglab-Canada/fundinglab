@@ -64,7 +64,7 @@ export default async function AssessmentReportPage({ searchParams }: { searchPar
               <span className="flex flex-col gap-1">
                 <b className="text-ink">{g.fix}</b>
                 <span className="text-sm text-subtle">{g.question}</span>
-                {g.service && <Link href={g.service.href.replace("/services#", "/app/services#")} className="text-sm font-semibold text-brand-text underline">Get help: {g.service.label}</Link>}
+                {g.service && <Link href={g.service.href} className="text-sm font-semibold text-brand-text underline">Get help: {g.service.label}</Link>}
               </span>
             </li>
           ))}

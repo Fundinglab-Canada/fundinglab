@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           // Organization JSON-LD (§14)
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
             "@context": "https://schema.org", "@type": "Organization", name: BRAND.name, url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://fundinglab.ca",
-            email: BRAND.contactEmail, logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://fundinglab.ca"}/brand/funding-lab-logo.png`, areaServed: "CA",
+            logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://fundinglab.ca"}/brand/funding-lab-logo.png`, areaServed: "CA",
           }) }}
         />
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-2">

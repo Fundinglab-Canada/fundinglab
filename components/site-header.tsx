@@ -72,6 +72,7 @@ export async function SiteHeader() {
               <form action="/auth/signout" method="post"><button className="btn-secondary btn-sm">{t("logout")}</button></form>
             ) : (
               <>
+                <Link href="/partners/join" className="hidden rounded-md border-2 border-brand px-3 py-1.5 text-[14px] font-bold text-brand-text hover:bg-brand-soft md:inline-flex">Become a Partner</Link>
                 <Link href="/login" className="hidden rounded-md px-3 py-2 text-[15px] font-medium hover:bg-muted sm:inline-flex">{t("login")}</Link>
                 <Link href={CTA.href} className="btn-cta btn-sm">{CTA.short}</Link>
               </>
@@ -83,6 +84,7 @@ export async function SiteHeader() {
                   <Link key={i.href + i.label} href={i.href} className="rounded px-3 py-2 hover:bg-muted">{i.label}</Link>
                 ))}
                 {!session && <Link href="/login" className="rounded px-3 py-2 hover:bg-muted">{t("login")}</Link>}
+                {!session && <Link href="/partners/join" className="mt-1 rounded border-2 border-brand px-3 py-2 font-bold text-brand-text hover:bg-brand-soft">Become a Partner</Link>}
               </nav>
             </details>
           </div>

@@ -9,7 +9,7 @@ const LINKS = [
   { href: "/app/profile", label: "Profile" },
   { href: "/app/matches", label: "Introductions" },
   { href: "/app/assessment", label: "Readiness" },
-  { href: "/app/share", label: "Share" },
+  { href: "/app/share", label: "Investor snapshot" },
   { href: "/app/services", label: "Services" },
   { href: "/app/cohort", label: "Cohort" },
   { href: "/app/settings", label: "Settings" },
