@@ -12,6 +12,8 @@ jobs:
         with: { node-version: 20, cache: npm }
       - run: npm ci
       - run: npm run typecheck
+      - name: Program seed is in sync with content/programs
+        run: npx tsx scripts/gen-seed-programs.ts && git diff --exit-code supabase/seed_programs.sql
       - run: npm test
       - run: npm run build
         env:
@@ -34,8 +36,9 @@ jobs:
       PGDATABASE: postgres
     steps:
       - uses: actions/checkout@v4
-      - name: Migrations, seed and smoke test on plain Postgres (Supabase objects stubbed)
+      - name: Migrations, seeds, smoke test and RLS privacy suite on plain Postgres (Supabase objects stubbed)
         run: |
-          for f in supabase/tests/supabase_stubs.sql supabase/migrations/*.sql supabase/seed.sql supabase/tests/smoke.sql; do
+          for f in supabase/tests/supabase_stubs.sql supabase/migrations/*.sql supabase/seed.sql supabase/seed_programs.sql supabase/seed_demo.sql \
+                   supabase/tests/smoke.sql supabase/tests/rls_privacy.sql; do
             echo "== $f"; psql -v ON_ERROR_STOP=1 -q -f "$f"
           done

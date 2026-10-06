@@ -13,7 +13,7 @@ major_version = 15
 
 [db.seed]
 enabled = true
-sql_paths = ["./seed.sql"]
+sql_paths = ["./seed.sql", "./seed_programs.sql", "./seed_demo.sql"]
 
 [storage]
 file_size_limit = "25MiB"

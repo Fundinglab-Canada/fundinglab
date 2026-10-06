@@ -12,7 +12,7 @@ export async function getSessionProfile(): Promise<{ userId: string; profile: Pr
   return { userId: data.user.id, profile: profile as Profile };
 }
 
-export async function requireUser(next = "/dashboard") {
+export async function requireUser(next = "/app") {
   const s = await getSessionProfile();
   if (!s) redirect(`/login?next=${encodeURIComponent(next)}`);
   return s;
@@ -20,8 +20,8 @@ export async function requireUser(next = "/dashboard") {
 
 export async function requireRole(role: Profile["role"], next: string) {
   const s = await requireUser(next);
-  if (s.profile.role !== role && s.profile.role !== "admin") redirect("/dashboard");
-  if (role === "admin" && s.profile.role !== "admin") redirect("/dashboard");
+  if (s.profile.role !== role && s.profile.role !== "admin") redirect("/app");
+  if (role === "admin" && s.profile.role !== "admin") redirect("/app");
   return s;
 }
 

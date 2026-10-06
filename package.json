@@ -17,13 +17,13 @@
     "node": ">=20.11"
   },
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@fontsource/public-sans": "^5.3.0",
-    "@fontsource/schibsted-grotesk": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.1",
     "next": "15.5.27",
+    "next-intl": "^4.14.9",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "server-only": "^0.0.1",

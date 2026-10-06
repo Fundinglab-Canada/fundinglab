@@ -59,6 +59,13 @@ export const PARTNER_FIELDS: Record<PartnerTypeId, PartnerField[]> = {
     { key: "practice_areas", label: "Practice areas", kind: "text" },
     { key: "jurisdiction", label: "Jurisdiction", kind: "text" },
   ],
+  recruiter: [
+    { key: "specialties", label: "Roles you recruit for", kind: "text" },
+    { key: "placement_types", label: "Placement types", kind: "multi", options: ["permanent", "contract", "co_op", "executive"] },
+    { key: "regions", label: "Regions served", kind: "text" },
+    { key: "fee_model", label: "Fee model", kind: "text" },
+    { key: "wage_subsidy_experience", label: "Experience with wage-subsidy programs", kind: "boolean" },
+  ],
   fractional_cpa: [
     { key: "services", label: "Services", kind: "text" },
     { key: "rates", label: "Rates", kind: "text" },

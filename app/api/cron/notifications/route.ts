@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     const tpl = EMAIL_TEMPLATES[n.kind];
     if (tpl) {
       const { subject, text } = tpl(n.payload ?? {});
-      const ok = await sendEmail({ to: n.recipient_email!, subject, text: `${text}\n\n${env.siteUrl()}/dashboard` });
+      const ok = await sendEmail({ to: n.recipient_email!, subject, text: `${text}\n\n${env.siteUrl()}${n.kind === "opportunity_curated" || n.kind === "partner_approved" ? "/partner" : "/app"}` });
       if (!ok) continue;
       sent++;
     }

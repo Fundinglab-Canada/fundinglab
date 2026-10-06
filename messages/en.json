@@ -1,0 +1,67 @@
+{
+  "brand": {
+    "name": "Funding Lab",
+    "tagline": "Every funding path. One place. Start to finish.",
+    "contactName": "Funding Lab Team",
+    "disclaimer": "Funding Lab is not a registered securities dealer, lender, or law firm. We provide information and introductions only. Nothing on this platform is legal, tax, or financial advice, or an offer to buy or sell securities.",
+    "grantSourceNote": "Source: Government of Canada Open Data (federal grants and contributions only).",
+    "oglNote": "Contains information licensed under the Open Government Licence – Canada.",
+    "govToolNote": "Official Government of Canada tool. Funding Lab is an independent advisor and not affiliated with the Government of Canada."
+  },
+  "cta": {
+    "label": "Create Your Free Account",
+    "short": "Create Free Account",
+    "trust": "Free · 2 minutes to start · Your information stays private",
+    "closing": "Every business deserves a clear path to funding. Create your free Funding Lab account today."
+  },
+  "consent": {
+    "matching": "I consent to Funding Lab using my profile to match me with vetted funding partners and service experts.",
+    "sharing": "I consent to Funding Lab sharing my investor snapshot with partners I approve.",
+    "marketing": "Send me funding news, program deadlines and event invitations. I can unsubscribe at any time.",
+    "ownershipNote": "Optional. Used only to show you targeted programs."
+  },
+  "nav": {
+    "fundingPaths": "Funding Paths",
+    "grants": "Grants",
+    "services": "Services",
+    "learn": "Learn",
+    "webinar": "Free Funding Webinar",
+    "webinarNote": "Every Tuesday, 8 AM PT",
+    "cohort": "Road to Funding",
+    "cohortNote": "8-week cohort, Fridays 8 AM PT",
+    "assessment": "Free Funding Check",
+    "assessmentNote": "5-minute readiness assessment",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log in",
+    "logout": "Log out",
+    "menu": "Menu",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "introductions": "Introductions",
+    "dealFlow": "Deal flow",
+    "admin": "Admin",
+    "matching": "Matching",
+    "pipeline": "Pipeline",
+    "leads": "Leads"
+  },
+  "footer": {
+    "funding": "Funding",
+    "learn": "Learn",
+    "company": "Company",
+    "legal": "Legal",
+    "fundingPaths": "Funding Paths",
+    "grantsHub": "Grants Hub",
+    "assessment": "Free Funding Check",
+    "services": "Services",
+    "webinar": "Free Funding Webinar",
+    "cohort": "Road to Funding",
+    "about": "About Us",
+    "careers": "Careers",
+    "partners": "Become a Partner",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms",
+    "grantData": "Grant data:"
+  }
+}

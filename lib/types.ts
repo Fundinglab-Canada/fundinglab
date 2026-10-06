@@ -6,6 +6,9 @@ export type Profile = {
   full_name: string | null;
   email: string | null;
   phone: string | null;
+  sms_opt_in: boolean;
+  onboarded: boolean;
+  marketing_opt_in: boolean;
 };
 
 export type Business = {
@@ -36,6 +39,21 @@ export type Business = {
   consent_matching: boolean;
   consent_sharing: boolean;
   created_at: string;
+  legal_structure: string | null;
+  incorporation_province: string | null;
+  naics_code: string | null;
+  employees: number | null;
+  revenue_band: string | null;
+  ownership_tags: string[];
+  description: string | null;
+  logo_path: string | null;
+  funding_preference: "dilutive" | "non_dilutive" | "either" | null;
+  revenue_12m: number | null;
+  growth_rate_pct: number | null;
+  customers: number | null;
+  key_metrics: { label: string; value: string }[];
+  team: { name: string; role: string }[];
+  profile_completeness: number;
 };
 
 export type FundingHistoryRow = {
@@ -50,12 +68,14 @@ export type FundingHistoryRow = {
   grant_owner_org: string | null;
   grant_ref: string | null;
   auto_found: boolean;
+  status: "received" | "active" | "repaid" | "closed";
+  provider_name: string | null;
 };
 
 export type DocumentRow = {
   id: string;
   business_id: string;
-  kind: "pitch_deck" | "financials" | "business_plan" | "other";
+  kind: "pitch_deck" | "financials" | "business_plan" | "tax_returns" | "cap_table" | "incorporation" | "other";
   storage_path: string;
   file_name: string;
   size_bytes: number | null;
@@ -111,13 +131,17 @@ export type Introduction = {
   match_id: string;
   status: "approved" | "mutual";
   approved_at: string;
+  expires_at: string | null;
   business_opt_in: boolean | null;
   partner_opt_in: boolean | null;
+  score: number | null;
+  reasons: string[] | null;
   partner_type: string;
-  partner_name: string;
+  partner_name: string | null;
   partner_company: string | null;
   partner_location: string | null;
   partner_bio: string | null;
+  partner_photo: string | null;
   contact_person: string | null;
   contact_email: string | null;
   contact_phone: string | null;

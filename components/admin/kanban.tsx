@@ -36,8 +36,8 @@ export function Kanban({ deals }: { deals: DealRow[] }) {
                 key={d.id}
                 draggable
                 onDragStart={(e) => e.dataTransfer.setData("text/plain", d.id)}
-                className={`flex cursor-grab flex-col gap-1.5 rounded-md border border-line border-l-[3px] bg-white p-2.5 text-[13px] ${
-                  d.status === "funded" ? "border-l-info" : d.status === "closed_lost" ? "border-l-danger" : "border-l-teal"
+                className={`flex cursor-grab flex-col gap-1.5 rounded-md border border-line border-l-[3px] bg-surface p-2.5 text-[13px] ${
+                  d.status === "funded" ? "border-l-info" : d.status === "closed_lost" ? "border-l-danger" : "border-l-brand"
                 }`}
               >
                 <b className="text-sm text-ink">{d.businesses?.name}</b>

@@ -38,6 +38,7 @@ export function parsePartnerForm(formData: FormData, requireTerms: boolean) {
     details,
     agree: requireTerms ? formData.get("agree") === "on" : true,
   });
+  if (requireTerms && formData.get("confidential") !== "on") return { error: "Confirm the confidentiality commitment to continue." } as const;
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." } as const;
   const p = parsed.data;
   return {
@@ -55,7 +56,8 @@ export function parsePartnerForm(formData: FormData, requireTerms: boolean) {
         : p.type === "fractional_cpa" ? ["rd"]
         : p.type === "marketing_expert" ? ["marketing"]
         : p.type === "development_expert" ? ["product_development"]
-        : p.type === "ma_expert" ? ["partner_buyout"] : [],
+        : p.type === "ma_expert" ? ["partner_buyout"]
+        : p.type === "recruiter" ? ["hire_staff"] : [],
     },
   } as const;
 }

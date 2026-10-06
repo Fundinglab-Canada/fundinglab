@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { LookupResult } from "@/lib/grants/classify";
 import { BRAND } from "@/lib/constants";
 import { dateShort, money } from "@/lib/format";
@@ -23,6 +23,8 @@ export function GrantLookupField({
   const [entity, setEntity] = useState<string>(defaultEntity ?? "");
   const rejected = useRef<string[]>([]);
   const lastQuery = useRef("");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   const run = useCallback(async (name: string, force = false) => {
     const place = getPlace();
@@ -61,19 +63,24 @@ export function GrantLookupField({
           defaultValue={defaultName}
           autoComplete="organization"
           className="input"
+          onChange={(e) => {
+            const v = e.currentTarget.value;
+            if (timer.current) clearTimeout(timer.current);
+            timer.current = setTimeout(() => run(v), 600); // debounced lookup (spec: 600 ms)
+          }}
           onBlur={(e) => run(e.currentTarget.value)}
         />
-        <span className="help">We check Government of Canada open data for federal grants when you leave this field.</span>
+        <span className="help">As you type, we check Government of Canada open data for federal grants linked to your business.</span>
       </label>
       <input type="hidden" name="confirmed_grant_entity" value={entity} />
 
       {loading && <p className="help" aria-live="polite">Checking federal grant records…</p>}
 
       {!loading && result?.state === "match" && (
-        <div className="overflow-hidden rounded-lg border border-teal bg-white" aria-live="polite">
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-teal-soft px-4 py-3">
+        <div className="overflow-hidden rounded-lg border border-brand bg-surface" aria-live="polite">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-brand-soft px-4 py-3">
             <div>
-              <b className="text-teal-text">We found {result.grants.length} federal grant{result.grants.length === 1 ? "" : "s"} for {result.legalName}</b>
+              <b className="text-brand-text">We found {result.grants.length} federal grant{result.grants.length === 1 ? "" : "s"} for {result.legalName}</b>
               <div className="text-[13px] text-subtle">
                 Total federal funding received: <span className="num font-medium text-ink">{money(result.total)}</span>
               </div>

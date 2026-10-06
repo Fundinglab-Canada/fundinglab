@@ -41,3 +41,35 @@ export function nextStep(parts: ReadinessPart[], documents: string[]): string | 
   if (hist && hist.value < hist.max) return "Add past funding, including grants, to strengthen your history.";
   return null;
 }
+
+export type CompletenessInput = {
+  business: {
+    name: string | null; industry: string | null; province: string | null; city: string | null; legal_structure: string | null;
+    description: string | null; stage: string | null; amount_sought: number | null; use_of_funds: string[];
+    revenue_12m: number | null; customers: number | null; consent_matching: boolean;
+  };
+  documents: string[];
+  historyCount: number;
+  hasAssessment: boolean;
+};
+
+export type ChecklistItem = { id: string; label: string; done: boolean; href: string };
+
+/** Profile completeness checklist (dashboard) and percentage stored in businesses.profile_completeness. */
+export function completeness({ business: b, documents, historyCount, hasAssessment }: CompletenessInput) {
+  const items: ChecklistItem[] = [
+    { id: "basics", label: "Business basics", done: !!(b.name && b.industry && b.province && b.city && b.legal_structure), href: "/app/profile?step=1" },
+    { id: "description", label: "One-paragraph description", done: !!b.description && b.description.length >= 40, href: "/app/profile?step=1" },
+    { id: "stage", label: "Business stage", done: !!b.stage, href: "/app/profile?step=2" },
+    { id: "need", label: "Funding need and use of funds", done: !!(b.amount_sought && b.use_of_funds.length), href: "/app/profile?step=3" },
+    { id: "history", label: "Funding history", done: historyCount > 0, href: "/app/profile?step=4" },
+    { id: "traction", label: "Traction (revenue or customers)", done: b.revenue_12m != null || b.customers != null, href: "/app/profile?step=5" },
+    { id: "pitch_deck", label: "Pitch deck uploaded", done: documents.includes("pitch_deck"), href: "/app/profile?step=6" },
+    { id: "financials", label: "Financial statements uploaded", done: documents.includes("financials"), href: "/app/profile?step=6" },
+    { id: "business_plan", label: "Business plan uploaded", done: documents.includes("business_plan"), href: "/app/profile?step=6" },
+    { id: "consent", label: "Matching consent on", done: b.consent_matching, href: "/app/profile?step=6" },
+    { id: "assessment", label: "Readiness assessment taken", done: hasAssessment, href: "/app/assessment" },
+  ];
+  const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
+  return { items, pct };
+}

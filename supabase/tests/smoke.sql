@@ -80,15 +80,15 @@ from public.partners where display_name like 'Harbourline%';
 update public.partners set user_id = '00000000-0000-0000-0000-00000000000c' where display_name like 'Harbourline%';
 select public.fl_approve_match('20000000-0000-0000-0000-000000000001');
 do $$ begin
-  assert (select status from public.deals where match_id = '20000000-0000-0000-0000-000000000001') = 'introduced';
-  assert (select count(*) from public.notifications where kind = 'introduction_proposed') = 2;
+  assert not exists (select 1 from public.deals where match_id = '20000000-0000-0000-0000-000000000001'), 'deal opens only on mutual opt-in';
+  assert (select count(*) from public.notifications where kind in ('introduction_proposed', 'opportunity_curated')) = 2;
 end $$;
 
 -- Business sees name but not contact before mutual opt-in
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', true);
 do $$ declare r record; begin
   select * into r from public.fl_my_introductions('10000000-0000-0000-0000-000000000001');
-  assert r.partner_name like 'Harbourline%' and r.contact_email is null, 'contact hidden before mutual';
+  assert r.partner_name is null and r.contact_email is null and r.partner_type = 'venture_capital', 'identity hidden before mutual';
   assert public.fl_respond_to_match('20000000-0000-0000-0000-000000000001', true) = 'approved';
 end $$;
 
@@ -97,12 +97,13 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c
 do $$ declare r record; begin
   assert public.fl_respond_to_match('20000000-0000-0000-0000-000000000001', true) = 'mutual';
   select * into r from public.fl_partner_introductions();
-  assert r.contact_email is null, 'business contact only via snapshot sharing rules';
+  assert r.business_name = 'Northwind Robotics Inc.' and r.business_slug = 'northwind-robotics', 'business identity released on mutual';
 end $$;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000b', true);
 do $$ declare r record; begin
   select * into r from public.fl_my_introductions('10000000-0000-0000-0000-000000000001');
-  assert r.contact_email = 'dana@example.com', 'contact released after mutual opt-in';
+  assert r.contact_email = 'dana@example.com' and r.partner_name like 'Harbourline%', 'identity and contact released after mutual opt-in';
+  assert (select status from public.deals where match_id = '20000000-0000-0000-0000-000000000001') = 'introduced';
 end $$;
 
 -- Partners cannot approve themselves

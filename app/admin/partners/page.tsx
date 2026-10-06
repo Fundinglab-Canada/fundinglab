@@ -33,7 +33,7 @@ export default async function PartnersAdmin() {
               </p>
               <dl className="grid grid-cols-2 gap-2 text-[13px] sm:grid-cols-3">
                 {fields.filter((f) => p.details?.[f.key] != null).map((f) => (
-                  <div key={f.key} className="border-l-2 border-teal pl-2"><dt className="text-subtle">{f.label}</dt>
+                  <div key={f.key} className="border-l-2 border-brand pl-2"><dt className="text-subtle">{f.label}</dt>
                     <dd className="font-medium text-ink">{fmt(p.details[f.key], f.kind)}</dd></div>
                 ))}
               </dl>

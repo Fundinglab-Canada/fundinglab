@@ -103,7 +103,13 @@ export function PartnerForm({
       {showTerms && (
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" name="agree" required className="mt-1" />
-          I agree to the Partner Terms and understand my profile stays private and is activated only after Funding Lab approves it.
+          I agree to the <a href="/terms" className="underline">Partner Terms</a> and understand my profile stays private and is activated only after Funding Lab approves it.
+        </label>
+      )}
+      {showTerms && (
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" name="confidential" required className="mt-1" />
+          I will keep business information shared through Funding Lab confidential and use it only to evaluate the introduction.
         </label>
       )}
       <button className="btn-primary self-start" disabled={pending}>{pending ? "Saving…" : submitLabel}</button>

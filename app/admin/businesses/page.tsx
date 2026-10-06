@@ -20,13 +20,13 @@ export default async function BusinessesAdmin() {
         <tbody>
           {(data ?? []).map((b) => (
             <tr key={b.id}>
-              <td><Link href={`/admin/matches?b=${b.id}`} className="font-semibold text-ink hover:underline">{b.name}</Link></td>
+              <td><Link href={`/admin/matching?b=${b.id}`} className="font-semibold text-ink hover:underline">{b.name}</Link></td>
               <td>{stageName(b.stage)}</td>
               <td className="text-[13px]">{industryLabel(b.industry)}</td>
               <td>{b.province}</td>
               <td className="n">{money(b.amount_sought, true)}</td>
               <td className="n">{b.readiness_score}</td>
-              <td>{b.profile_step < 6 ? <span className="pill-warning">Profile step {b.profile_step}/5</span> : b.consent_matching ? <span className="pill-success">Matchable</span> : <span className="pill">No consent</span>}</td>
+              <td>{b.profile_step <= 6 ? <span className="pill-warning">Profile step {Math.min(b.profile_step, 6)}/6</span> : b.consent_matching ? <span className="pill-success">Matchable</span> : <span className="pill">No consent</span>}</td>
               <td className="text-[13px]">{dateShort(b.created_at)}</td>
             </tr>
           ))}

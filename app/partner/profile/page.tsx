@@ -12,7 +12,7 @@ export default async function PartnerProfilePage({ searchParams }: { searchParam
   const sp = await searchParams;
   const supabase = await createClient();
   const { data: p } = await supabase.from("partners").select("*, partner_criteria(*)").eq("user_id", userId).maybeSingle();
-  if (!p) redirect("/partners/apply");
+  if (!p) redirect("/partners/join");
   const c = Array.isArray(p.partner_criteria) ? p.partner_criteria[0] : p.partner_criteria;
   return (
     <section className="container flex max-w-3xl flex-col gap-4 py-10">

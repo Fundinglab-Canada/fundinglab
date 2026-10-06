@@ -31,6 +31,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ kind: s
         const b = (Array.isArray(o.businesses) ? o.businesses[0] : o.businesses) as { name: string } | null;
         return [o.id, b?.name ?? "", o.kind, o.status, o.amount, o.currency, o.created_at, o.paid_at];
       })];
+  } else if (kind === "leads") {
+    const { data } = await supabase.from("leads").select("id, kind, status, name, email, phone, business_name, city, score, result_band, source_page, created_at");
+    rows = [["lead_id", "kind", "status", "name", "email", "phone", "business", "city", "score", "band", "source_page", "created_at"],
+      ...(data ?? []).map((l) => [l.id, l.kind, l.status, l.name, l.email, l.phone, l.business_name, l.city, l.score, l.result_band, l.source_page, l.created_at])];
+  } else if (kind === "applications") {
+    const { data } = await supabase.from("job_applications").select("id, full_name, email, phone, city, province, status, rating, work_type, work_eligible, source, created_at, retain_until, jobs(title)");
+    rows = [["application_id", "job", "name", "email", "phone", "city", "province", "status", "rating", "work_type", "work_eligible", "source", "created_at", "retain_until"],
+      ...(data ?? []).map((a) => {
+        const j = (Array.isArray(a.jobs) ? a.jobs[0] : a.jobs) as { title: string } | null;
+        return [a.id, j?.title ?? "General", a.full_name, a.email, a.phone, a.city, a.province, a.status, a.rating, a.work_type, String(a.work_eligible), a.source, a.created_at, a.retain_until];
+      })];
+  } else if (kind === "webinar") {
+    const session = new URL(_req.url).searchParams.get("session");
+    let q = supabase.from("webinar_registrations").select("name, email, phone, business_name, stage, sms_opt_in, attended, source, created_at, webinar_sessions(starts_at)");
+    if (session) q = q.eq("session_id", session);
+    const { data } = await q;
+    rows = [["session_starts_at", "name", "email", "phone", "business", "stage", "sms_opt_in", "attended", "source", "registered_at"],
+      ...(data ?? []).map((r) => {
+        const s = (Array.isArray(r.webinar_sessions) ? r.webinar_sessions[0] : r.webinar_sessions) as { starts_at: string } | null;
+        return [s?.starts_at ?? "", r.name, r.email, r.phone, r.business_name, r.stage, String(r.sms_opt_in), r.attended == null ? "" : String(r.attended), r.source, r.created_at];
+      })];
   } else {
     return NextResponse.json({ error: "Unknown export" }, { status: 404 });
   }
