@@ -20,7 +20,7 @@ file_size_limit = "25MiB"
 
 [auth]
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://localhost:3002/auth/callback"]
 enable_signup = true
 
 [auth.email]
