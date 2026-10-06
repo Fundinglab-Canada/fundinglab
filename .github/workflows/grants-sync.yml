@@ -1,0 +1,21 @@
+name: Grants mirror sync
+# Government of Canada updates Proactive Disclosure quarterly; weekly keeps us current without waste.
+on:
+  schedule: [{ cron: "17 9 * * 1" }] # Mondays 09:17 UTC
+  workflow_dispatch:
+    inputs:
+      limit: { description: "Optional row limit for a test run", required: false }
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm run etl:grants -- ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          GRANTS_CSV_URL: https://open.canada.ca/data/dataset/432527ab-7aac-45b5-81d6-7597107a7013/resource/1d15a62f-5656-49ad-8c88-f40ce689d831/download/grants.csv

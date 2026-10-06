@@ -1,0 +1,50 @@
+{
+  "name": "funding-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Funding Lab — funding marketplace for Canadian businesses (Next.js + Supabase).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
+    "etl:grants": "tsx scripts/etl/grants-sync.ts",
+    "etl:grants:sample": "tsx scripts/etl/grants-sync.ts --limit 20000"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/public-sans": "^5.3.0",
+    "@fontsource/schibsted-grotesk": "^5.3.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.4",
+    "clsx": "^2.1.1",
+    "next": "15.5.27",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "server-only": "^0.0.1",
+    "stripe": "^17.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/pg": "^8.11.10",
+    "@types/pg-copy-streams": "^1.2.5",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "autoprefixer": "^10.4.20",
+    "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.1",
+    "pg": "^8.13.0",
+    "pg-copy-streams": "^6.0.6",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.2"
+  }
+}

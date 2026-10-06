@@ -1,0 +1,39 @@
+# Minimal local config for `supabase start`. Run `supabase init` first if you want the full default file,
+# then merge the [auth] sections below.
+project_id = "funding-lab"
+
+[api]
+port = 54321
+schemas = ["public"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+file_size_limit = "25MiB"
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+
+[auth.external.linkedin_oidc]
+enabled = true
+client_id = "env(SUPABASE_AUTH_LINKEDIN_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_LINKEDIN_SECRET)"
