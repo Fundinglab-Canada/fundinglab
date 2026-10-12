@@ -11,6 +11,7 @@ const NAV: [string, string][] = [
   ["/admin/businesses", "Businesses"],
   ["/admin/partners", "Partners"],
   ["/admin/services", "Service requests"],
+  ["/admin/revenue", "Revenue & plans"],
   ["/admin/leads", "Leads"],
   ["/admin/messages", "Messages"],
   ["/admin/programs-education", "Webinar & cohorts"],

@@ -20,6 +20,7 @@ const cols = [
   "slug", "name", "funder", "level", "province", "type", "summary", "industries", "stages", "min_amount", "max_amount",
   "cost_share_pct", "intake_open", "intake_close", "rolling", "official_url", "last_verified_at", "is_sample", "is_featured",
   "featured_order", "badge", "headline", "subheadline", "status_text", "close_at", "calculator", "official_contact", "disclaimer", "content",
+  "eligibility_rules", "required_docs", "eligible_expenses", "stacking_limit_pct",
 ] as const;
 
 type Row = Partial<Record<(typeof cols)[number], unknown>>;
@@ -30,12 +31,14 @@ const rows: Row[] = [
     ...p, industries: p.industries ?? [], province: p.province ?? null, rolling: p.rolling ?? false,
     max_amount: p.max_amount ?? null, cost_share_pct: p.cost_share_pct ?? null, is_sample: true, is_featured: false,
     last_verified_at: null, content: {},
+    eligibility_rules: p.eligibility_rules ?? {}, required_docs: p.required_docs ?? [], eligible_expenses: p.eligible_expenses ?? [],
+    stacking_limit_pct: p.stacking_limit_pct ?? null,
   })),
 ];
 
 const values = rows.map((r) => `(${cols.map((c) => {
   const v = r[c];
-  if ((c === "industries" || c === "stages") && Array.isArray(v) && v.length === 0) return "'{}'::text[]";
+  if ((c === "industries" || c === "stages" || c === "required_docs" || c === "eligible_expenses") && Array.isArray(v) && v.length === 0) return "'{}'::text[]";
   return q(v ?? null);
 }).join(", ")})`);
 

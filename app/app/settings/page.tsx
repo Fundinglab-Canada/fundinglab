@@ -1,18 +1,41 @@
-import { getMyBusiness, requireUser } from "@/lib/auth";
+import Link from "next/link";
+import { getMyBusiness, getMyPlan, requireUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { planName } from "@/lib/plans";
+import { dateShort } from "@/lib/format";
+import { openBillingPortal } from "@/app/pricing/actions";
 import { CONSENT } from "@/lib/constants";
 import { deleteAccount, saveSettings } from "./actions";
 
 export const metadata = { title: "Settings" };
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
-  const { profile } = await requireUser("/app/settings");
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; billing?: string }> }) {
+  const { profile, userId } = await requireUser("/app/settings");
   const sp = await searchParams;
   const business = await getMyBusiness();
+  const [plan, { data: sub }] = await Promise.all([
+    getMyPlan(),
+    (await createClient()).from("subscriptions").select("plan, status, stripe_customer_id, current_period_end").eq("user_id", userId).maybeSingle(),
+  ]);
   return (
     <section className="container flex max-w-3xl flex-col gap-6 py-10">
       <h1 className="text-3xl font-bold">Settings</h1>
       {sp.saved && <p className="pill-success self-start px-4 py-2 text-sm" role="status">Saved.</p>}
       {sp.error && <p className="error rounded-md bg-danger-soft px-3 py-2" role="alert">{sp.error}</p>}
+
+      {sp.billing === "success" && <p className="pill-success self-start px-4 py-2 text-sm" role="status">Thanks! Your plan is active. It can take a minute to show here.</p>}
+      <div className="card flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold">Plan and billing</h2>
+          <p className="text-sm text-body">You&apos;re on <b>{planName(plan)}</b>{sub?.plan && sub.plan !== "free" && sub.plan !== plan ? ` (paid plan: ${planName(sub.plan)})` : ""}
+            {sub?.current_period_end && sub.status !== "canceled" ? ` · renews ${dateShort(sub.current_period_end)}` : ""}
+            {sub?.status === "past_due" ? " · payment past due" : ""}.</p>
+        </div>
+        <div className="flex gap-2">
+          {sub?.stripe_customer_id && <form action={openBillingPortal}><button className="btn-secondary btn-sm">Manage billing</button></form>}
+          <Link href="/pricing" className="btn-primary btn-sm">{plan === "free" ? "Upgrade" : "Compare plans"}</Link>
+        </div>
+      </div>
 
       <form action={saveSettings} className="card flex flex-col gap-4">
         <h2 className="text-lg font-bold">Account and consent</h2>

@@ -28,6 +28,32 @@ export const redip = {
   status_text: "Intake 5 closes November 20, 2026, 11:59 PM PST",
   close_at: "2026-11-21T07:59:00Z",
   calculator: "redip",
+  stacking_limit_pct: null,
+  eligibility_rules: {
+    provinces: ["BC"],
+    notes: [
+      "For-profit businesses can't lead an application; join as a partner with a rural municipality, regional district, First Nation or non-profit.",
+      "The project must be in a Rural 1–3 area or an Indigenous community.",
+    ],
+  },
+  eligible_expenses: [
+    "Consultants, engineering, design and project management",
+    "Construction, materials and utility hookups",
+    "Equipment and capital (max 50% of grant)",
+    "Staff wages for project work (max 25% of grant)",
+    "Indigenous consultation, marketing, travel at government rates",
+  ],
+  required_docs: [
+    "REDIP budget template (Excel)",
+    "Quotes for all major costs",
+    "Letter from each partner",
+    "Direct deposit form and void cheque",
+    "Business BCeID",
+    "Permits, assessments and approvals (building projects)",
+    "Drawings / engineering (building projects)",
+    "Project timeline (Gantt)",
+    "Letters confirming other funding",
+  ],
   official_contact: "RuralDevelopment@gov.bc.ca · 1-250-356-7950",
   disclaimer:
     "Funding Lab is an independent advisor, not part of the Government of B.C. Always confirm with the official program: RuralDevelopment@gov.bc.ca · 1-250-356-7950.",

@@ -4,7 +4,7 @@
 
 Stack: **Next.js 15 (App Router, Server Actions) · Supabase (Postgres, Auth, Storage, RLS) · Stripe · Resend · Tailwind CSS · next-intl**.
 
-This repo implements **Phase 1 (MVP)** of the development spec (§16). See [What's deferred](#whats-deferred-to-phase-24).
+This repo implements **Phase 1 (MVP)** and **Phase 2 (Readiness & Applications)** of the development spec (§16). See [What's deferred](#whats-deferred-to-phase-34).
 
 ---
 
@@ -25,6 +25,8 @@ Create an account at `/signup` (local emails appear in Inbucket at http://localh
 ```sql
 update public.profiles set role = 'admin', onboarded = true where email = 'you@example.com';
 ```
+
+Already have a local database from an earlier phase? Apply new migrations with `supabase migration up` (or `supabase db reset` to rebuild from scratch with seeds).
 
 Seed data (all fictional, §17): 13 partners (one per type, incl. Recruitment Partner), 5 demo businesses Idea → Exit with matches and a deal, REDIP + RTRI featured pages and 18 sample programs marked "sample", 3 jobs, an open Road to Funding cohort, 8 weeks of Tuesday webinar sessions, and sample grant records. Try **Northwind Robotics Inc.** (confident match) or **Coastal Bio** (possible match) in the profile.
 
@@ -53,6 +55,13 @@ npm run etl:grants          # full file, ~1.3M rows (10–30 min)
 | Business app: dashboard (journey, readiness, verified grants, introductions, webinar, cohort offer, recommended services, completeness checklist), 6-step profile with real-time company search of Government of Canada grant records (search.open.canada.ca, live) plus the local mirror, introductions, investor snapshot with written summary (contact details confirmed first), services + Pay now, settings (consents, data export, account deletion) | `app/app/*`, `components/profile/*` |
 | Partner app: application with role-specific fields (13 types) + confidentiality commitment, anonymized deal flow (Interested / Pass), introductions, profile, membership | `app/partners/join`, `app/partner/*` |
 | Admin: KPIs + funnel, matching (per business + review queue), pipeline (8 stages), businesses (per-business page with visibility and tracked share links — admin-only), partner approvals, service requests, leads, messages, webinar & cohorts (sessions, enrollments, attendance), programs CMS (JSON blocks, guide PDFs, re-verification), careers (jobs, applicants, signed resume links), site content, audit log, CSV exports, admin guide | `app/admin/*` |
+| Funding roadmap + capital stack planner: rules engine by stage, need and preference (Now / Next / Later, mark done); drag-in stack builder with blended cost of capital, founder dilution and a stacking-limit warning | `app/app/roadmap`, `lib/roadmap.ts`, `components/app/stack-builder.tsx` |
+| Calculators: dilution (with option pool), loan repayment + DSCR, grant cost share (cap, other government funding, stacking limit), runway — every field has an explainer | `app/app/calculators`, `lib/funding-calculators.ts` |
+| Grant Intelligence: every active program scored against the profile with "Why you match" / "What might disqualify you", filters (level, province, type, industry, open now, closing soon, saved), save + deadline alerts 30 / 14 / 3 days before close (email; SMS if opted in), program detail with eligible expenses, required documents, Start application and Get a Grant Writer, compact ISED finder | `app/app/grants`, `lib/programs/match.ts`, `app/api/cron/hourly` |
+| Application Center: Kanban (Planning → Drafting → Under Review → Submitted → Approved / Declined), checklists built from the program's required documents and linked to data room files, decline reason → specific fixes + 3 alternative programs, approval → funding history row + claim / report / payment obligations (in Postgres, once), expert-review upsell | `app/app/applications`, `lib/applications.ts`, `fl_application_status()` |
+| Prep Studio: completeness per item; guided 11-section business plan (print to PDF); 12-slide pitch outline; 3-statement financial model template; cap table editor with ownership chart and CSV export; lender-ready loan package; data room with 7 standard folders, expected-file checklists, versions, email invitations with expiry and a download toggle, PDF previews watermarked with viewer email + date, and per-document view analytics | `app/app/prep/*`, `app/data-room/[token]`, `app/api/data-room/*`, `lib/prep.ts`, `lib/watermark.ts` |
+| Plans: Free / Starter / Growth / Pro with feature gates and upgrade cards, /pricing, Stripe Checkout subscriptions + Customer Portal, webhook-synced status, Growth free during a cohort, admin comps, Revenue & plans page | `lib/plans.ts`, `app/pricing`, `app/api/stripe/webhook`, `app/admin/revenue` |
+| Dashboard (Phase 2 cards): capital stack progress, active applications, deadlines in the next 30 days, top 3 recommended programs | `app/app/page.tsx` |
 | Email notifications outbox → Resend | `fl_notify()` in SQL, `app/api/cron/notifications`, `lib/email.ts` |
 | Database: schema, RLS, RPCs, storage buckets, grants mirror | `supabase/migrations/*` |
 | i18n: chrome strings (brand, CTA, consent, nav, footer) in `messages/en.json` via next-intl | `messages/`, `i18n/request.ts` |
@@ -110,17 +119,18 @@ The assessment score (6 pillars: Business Model 20, Traction 20, Financials 20, 
 | Schedule | Route | Does |
 |---|---|---|
 | every 5 min | `/api/cron/notifications` | Drains the `notifications` outbox to email (introductions, approvals, etc.) |
-| hourly (:07) | `/api/cron/hourly` | Keeps 8 weeks of Tuesday webinar sessions; 24 h / 1 h reminders and post-webinar follow-up; expires introductions and sends day-7 reminders; releases unpaid cohort seats after 2 h; purges job applications past retention (with files) |
+| hourly (:07) | `/api/cron/hourly` | Keeps 8 weeks of Tuesday webinar sessions; 24 h / 1 h reminders and post-webinar follow-up; expires introductions and sends day-7 reminders; releases unpaid cohort seats after 2 h; purges job applications past retention (with files); saved-program deadline alerts 30 / 14 / 3 days before close (Starter and up) |
 
 Both are scheduled by `.github/workflows/cron.yml` (Vercel Hobby only allows daily crons) and require `Authorization: Bearer $CRON_SECRET`. Set repository secret `CRON_SECRET` (same value as Vercel) and repository variable `APP_URL`. If `pg_cron` is enabled in Supabase, the migration also schedules webinar session creation in the database.
 
 ## Stripe
 
-1. Webhook endpoint `https://YOUR_DOMAIN/api/stripe/webhook` with events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `charge.refunded`, `customer.subscription.deleted`. Put the signing secret in `STRIPE_WEBHOOK_SECRET`.
+1. Webhook endpoint `https://YOUR_DOMAIN/api/stripe/webhook` with events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `charge.refunded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Put the signing secret in `STRIPE_WEBHOOK_SECRET`.
 2. Cohort price comes from the cohort row (`price_cad`, default $499 CAD) or an optional `stripe_price_id`. Promotion codes are enabled at checkout.
 3. Set `STRIPE_AUTOMATIC_TAX=true` after configuring Stripe Tax to collect GST/HST/PST.
-4. Optional partner membership prices: `STRIPE_PRICE_PARTNER_PRO`, `STRIPE_PRICE_PARTNER_PREMIER`.
-5. Local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
+4. Business plans: create three recurring CAD prices and set `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_GROWTH`, `STRIPE_PRICE_PRO`. Turn on the Customer Portal (Settings → Billing → Customer portal) with plan switching and cancellation. Until the prices are set, /pricing shows a "contact us" message and admins can comp plans.
+5. Optional partner membership prices: `STRIPE_PRICE_PARTNER_PRO`, `STRIPE_PRICE_PARTNER_PREMIER`.
+6. Local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 
 ## Deploy
 
@@ -138,10 +148,11 @@ Both are scheduled by `.github/workflows/cron.yml` (Vercel Hobby only allows dai
 
 ```bash
 npm run typecheck
-npm test     # matching formula, readiness assessment, calculators, completeness, grant classification, normalization, admin input whitelist, time zones
+npm test     # matching formula, readiness assessment, calculators, completeness, grant classification, normalization, admin input whitelist, time zones,
+             # roadmap rules, capital stack, program matcher, deadline alerts, plan gates, checklists, cap table, PDF watermark
 # Database (scratch Postgres with Supabase objects stubbed):
 for f in supabase/tests/supabase_stubs.sql supabase/migrations/*.sql supabase/seed.sql supabase/seed_programs.sql \
-         supabase/seed_demo.sql supabase/tests/smoke.sql supabase/tests/rls_privacy.sql; do psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"; done
+         supabase/seed_demo.sql supabase/tests/smoke.sql supabase/tests/rls_privacy.sql supabase/tests/phase2.sql; do psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$f"; done
 ```
 
 **RLS privacy suite** (`supabase/tests/rls_privacy.sql`, Acceptance Criteria 4 & 5) proves, as real `anon` / `authenticated` roles:
@@ -151,13 +162,17 @@ for f in supabase/tests/supabase_stubs.sql supabase/migrations/*.sql supabase/se
 - identities on both sides stay hidden after admin approval and are released only on mutual acceptance;
 - name/domain stripping, Pass, cohort attendance rules and 14-day expiry.
 
+**Phase 2 suite** (`supabase/tests/phase2.sql`): approval creates funding history and obligations exactly once and the client can't set the link; owners can't read or write another business's applications, obligations, documents or data room invitations; owners can't grant themselves a plan; data room tokens are server-generated; viewers see only latest versions and never storage paths; downloads respect the toggle; access expires and revocation works (Acceptance Criterion 8); cohort members get Growth.
+
 CI (`.github/workflows/ci.yml`) runs typecheck, a seed-sync check, unit tests, `next build`, and every migration + seed + both SQL suites on Postgres 15.
 
 ---
 
-## What's deferred to Phase 2–4
+## What's deferred to Phase 3–4
 
-Per spec §16: funding roadmap & capital stack, program eligibility matcher & alerts, Application Center, Prep Studio (data room, cap table, templates), subscription plans, business team members, deal rooms, offer explainer, closing checklist, post-funding hub, AI copilot/drafting, events, French localization (strings are ready in `messages/`), admin impersonation.
+Per spec §16: deal rooms, offer explainer, closing checklist, post-funding hub (obligations calendar and reminders, claims manager, investor updates), bridge financing flow, Next Round Engine, AI copilot and AI drafting (business plan and application answers), learn library, events, French localization (strings are ready in `messages/`), business team members, admin impersonation.
+
+Phase 2 notes: Prep Studio completeness is shown per item but doesn't change the assessment-based readiness score; Growth's "priority matching" (§11) isn't implemented yet; obligations are created on approval but reminders and the calendar arrive with the Post-Funding Hub; the loan package and business plan use print-to-PDF.
 
 Stack deviations to revisit: plain Tailwind components instead of shadcn/ui, server actions instead of React Hook Form, CSS bars instead of Recharts, plain-text emails instead of React Email, print-to-PDF instead of `@react-pdf/renderer`, no PostHog/Sentry yet, in-memory rate limiting (use Upstash/Redis for multi-instance).
 

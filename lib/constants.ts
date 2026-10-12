@@ -52,12 +52,12 @@ export const FUNDING_PATHS = [
 ] as const;
 export type FundingPath = (typeof FUNDING_PATHS)[number];
 
-// Homepage "Sound familiar?" (§4). Modules not yet live link to the closest Phase 1 surface.
+// Homepage "Sound familiar?" (§4). Modules not yet live (Phase 3+) link to the closest available surface.
 export const PAIN_POINTS = [
   { quote: "I don't know which funding I qualify for.", module: "Readiness Assessment + Funding Roadmap", href: "/assessment" },
   { quote: "Grants are scattered across dozens of websites.", module: "Grant Intelligence", href: "/grants" },
-  { quote: "I'm not investor- or lender-ready.", module: "Prep Studio", href: "/services" },
-  { quote: "Applications take forever and get rejected.", module: "Application Center", href: "/services/grant_writing" },
+  { quote: "I'm not investor- or lender-ready.", module: "Prep Studio", href: "/app/prep" },
+  { quote: "Applications take forever and get rejected.", module: "Application Center", href: "/app/applications" },
   { quote: "I can't reach the right investors or lenders.", module: "Private Matchmaking", href: "/signup" },
   { quote: "I don't understand term sheets or loan terms.", module: "Deal Close Support", href: "/services/legal_cpa_review" },
   { quote: "Grants pay after I spend — I have a cash gap.", module: "Bridge Financing", href: "/funding-paths/business-loans" },

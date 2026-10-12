@@ -33,6 +33,18 @@ export type ProgramContent = {
   officialLinks?: { label: string; url: string }[];
 };
 
+/** programs.eligibility_rules — inputs for the Grant Intelligence matcher (§7.4). All keys optional. */
+export type EligibilityRules = {
+  provinces?: string[];
+  legal_structures?: string[];
+  ownership_tags?: string[];
+  min_revenue?: number;
+  max_revenue?: number;
+  min_employees?: number;
+  uses_of_funds?: string[];
+  notes?: string[];
+};
+
 export type ProgramRow = {
   id: string;
   slug: string;
@@ -47,6 +59,11 @@ export type ProgramRow = {
   min_amount: number | null;
   max_amount: number | null;
   cost_share_pct: number | null;
+  eligible_expenses: string[];
+  eligibility_rules: EligibilityRules;
+  stacking_limit_pct: number | null;
+  required_docs: string[];
+  intake_open: string | null;
   intake_close: string | null;
   rolling: boolean;
   official_url: string | null;

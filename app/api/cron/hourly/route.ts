@@ -3,6 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { EMAIL_TEMPLATES, sendEmail, sendSms } from "@/lib/email";
 import { env } from "@/lib/env";
 import { ptString, webinarGoogleUrl, webinarIcs } from "@/lib/webinar";
+import { alertDue, programDeadline } from "@/lib/programs/match";
+import { hasFeature, isPlan } from "@/lib/plans";
+import { dateShort } from "@/lib/format";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -14,6 +17,7 @@ export const maxDuration = 60;
  * 3. Expire unanswered introductions (14 days) and send the day-7 reminder.
  * 4. Release unpaid cohort seats after 2 hours.
  * 5. Purge job applications past their 12-month retention, including stored files.
+ * 6. Saved-program deadline alerts 30 / 14 / 3 days before intake close (Starter and up; email, SMS if opted in).
  */
 export async function GET(request: Request) {
   if (request.headers.get("authorization") !== `Bearer ${env.cronSecret()}`) {
@@ -87,5 +91,60 @@ export async function GET(request: Request) {
   if (expired?.length) await db.from("job_applications").delete().in("id", expired.map((a) => a.id));
   report.applications_purged = expired?.length ?? 0;
 
+  // --- Program deadline alerts ---------------------------------------------------------------
+  report.program_alerts = await programAlerts(db, new Date(now));
+
   return NextResponse.json({ ok: true, ...report });
+}
+
+type Db = ReturnType<typeof createAdminClient>;
+
+async function programAlerts(db: Db, now: Date): Promise<number> {
+  const horizon = new Date(now.getTime() + 31 * 864e5).toISOString();
+  const { data: rows } = await db
+    .from("saved_programs")
+    .select("business_id, program_id, alerts_sent, programs!inner(name, slug, close_at, intake_close, rolling, active), businesses!inner(name, owner_id)")
+    .eq("alert_enabled", true)
+    .eq("programs.active", true)
+    .or(`close_at.lte.${horizon},intake_close.lte.${horizon}`, { referencedTable: "programs" })
+    .limit(1000);
+  if (!rows?.length) return 0;
+
+  const owners = [...new Set(rows.map((r) => (r.businesses as unknown as { owner_id: string }).owner_id))];
+  const [{ data: people }, { data: subs }, { data: cohorts }] = await Promise.all([
+    db.from("profiles").select("id, email, full_name, phone, sms_opt_in, role").in("id", owners),
+    db.from("subscriptions").select("user_id, plan, status").in("user_id", owners),
+    db.from("cohort_enrollments").select("user_id, cohorts!inner(end_date)").in("user_id", owners).eq("status", "enrolled"),
+  ]);
+  const today = now.toISOString().slice(0, 10);
+  const planOf = (uid: string) => {
+    const s = (subs ?? []).find((x) => x.user_id === uid);
+    const paid = s && ["active", "trialing", "past_due"].includes(s.status) && isPlan(s.plan) ? s.plan : "free";
+    const inCohort = (cohorts ?? []).some((c) => c.user_id === uid && (c.cohorts as unknown as { end_date: string }).end_date >= today);
+    return inCohort && !hasFeature(paid, "data_room") ? "growth" : paid;
+  };
+
+  let sent = 0;
+  for (const r of rows) {
+    const p = r.programs as unknown as { name: string; slug: string; close_at: string | null; intake_close: string | null; rolling: boolean };
+    const b = r.businesses as unknown as { name: string; owner_id: string };
+    const deadline = programDeadline(p);
+    if (!deadline || p.rolling) continue;
+    const due = alertDue(deadline, (r.alerts_sent as number[]) ?? [], now);
+    if (!due) continue;
+    const person = (people ?? []).find((x) => x.id === b.owner_id);
+    if (!person?.email || !hasFeature(person.role === "admin" ? "pro" : planOf(person.id), "program_alerts")) continue;
+    const days = Math.max(1, Math.ceil((deadline.getTime() - now.getTime()) / 864e5));
+    const link = `${env.siteUrl()}/app/grants/${p.slug}`;
+    await sendEmail({
+      to: person.email,
+      subject: `${days} day${days === 1 ? "" : "s"} left: ${p.name}`,
+      text: `Hi ${(person.full_name ?? "there").split(" ")[0]},\n\n${p.name} closes ${dateShort(deadline)} (${days} day${days === 1 ? "" : "s"} from now). You saved it for ${b.name}.\n\nCheck your documents and application: ${link}\n\nNeed help finishing it? Reply to book a grant writer.`,
+    });
+    if (person.sms_opt_in && person.phone) await sendSms(person.phone, `Funding Lab: ${p.name} closes in ${days} day${days === 1 ? "" : "s"} (${dateShort(deadline)}). ${link}`);
+    await db.from("saved_programs").update({ alerts_sent: [...new Set([...((r.alerts_sent as number[]) ?? []), ...due.markSent])] })
+      .eq("business_id", r.business_id).eq("program_id", r.program_id);
+    sent++;
+  }
+  return sent;
 }

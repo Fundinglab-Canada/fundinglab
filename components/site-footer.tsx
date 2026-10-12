@@ -5,7 +5,7 @@ import { BRAND } from "@/lib/constants";
 export async function SiteFooter() {
   const t = await getTranslations("footer");
   const COLUMNS: [string, [string, string][]][] = [
-    [t("funding"), [["/funding-paths", t("fundingPaths")], ["/grants", t("grantsHub")], ["/assessment", t("assessment")], ["/services", t("services")]]],
+    [t("funding"), [["/funding-paths", t("fundingPaths")], ["/grants", t("grantsHub")], ["/assessment", t("assessment")], ["/services", t("services")], ["/pricing", t("pricing")]]],
     [t("learn"), [["/webinar", t("webinar")], ["/road-to-funding", t("cohort")]]],
     [t("company"), [["/about", t("about")], ["/careers", t("careers")], ["/partners/join", t("partners")], ["/contact", t("contact")]]],
     [t("legal"), [["/privacy", t("privacy")], ["/terms", t("terms")]]],

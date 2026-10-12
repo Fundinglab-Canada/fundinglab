@@ -1,30 +1,39 @@
+import type { EligibilityRules } from "@/lib/programs/types";
+
 // 18 sample programs for development (§17). Every row is flagged is_sample and shows
 // "Sample data — verify before launch". Amounts are indicative only.
 type Sample = {
   slug: string; name: string; funder: string; level: "federal" | "provincial" | "regional";
   province?: string; type: "grant" | "contribution" | "loan" | "tax_credit" | "wage_subsidy" | "equity" | "repayable";
   summary: string; stages: string[]; industries?: string[]; max_amount?: number; cost_share_pct?: number; rolling?: boolean; official_url: string;
+  eligibility_rules?: EligibilityRules; required_docs?: string[]; eligible_expenses?: string[]; stacking_limit_pct?: number;
 };
 
 export const SAMPLE_PROGRAMS: Sample[] = [
   { slug: "irap", name: "Industrial Research Assistance Program (IRAP)", funder: "National Research Council Canada", level: "federal", type: "contribution",
     summary: "Advisory services and non-repayable contributions for technology innovation projects at SMEs.", stages: ["seed", "growth", "expansion"], rolling: true,
-    official_url: "https://nrc.canada.ca/en/support-technology-innovation" },
+    official_url: "https://nrc.canada.ca/en/support-technology-innovation",
+    eligibility_rules: { legal_structures: ["corporation"], uses_of_funds: ["rd", "product_development"], notes: ["For incorporated, for-profit SMEs with 500 or fewer employees."] }, required_docs: ["Project description and budget", "Financial statements", "Incorporation documents"], eligible_expenses: ["Salaries of staff working on the project", "Contractors and consultants"] },
   { slug: "sred", name: "SR&ED Tax Incentive Program", funder: "Canada Revenue Agency", level: "federal", type: "tax_credit",
     summary: "Refundable and non-refundable tax credits for eligible scientific research and experimental development.", stages: ["preseed", "seed", "growth", "expansion"], rolling: true,
-    official_url: "https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program.html" },
+    official_url: "https://www.canada.ca/en/revenue-agency/services/scientific-research-experimental-development-tax-incentive-program.html",
+    eligibility_rules: { uses_of_funds: ["rd"] }, required_docs: ["T661 project descriptions", "Time tracking for R&D staff", "Financial statements"] },
   { slug: "canexport-smes", name: "CanExport SMEs", funder: "Global Affairs Canada", level: "federal", type: "contribution",
     summary: "Cost-share funding for market development activities in new international markets.", stages: ["growth", "expansion"], cost_share_pct: 50,
-    official_url: "https://www.tradecommissioner.gc.ca/funding-financement/canexport/sme-pme/index.aspx" },
+    official_url: "https://www.tradecommissioner.gc.ca/funding-financement/canexport/sme-pme/index.aspx",
+    eligibility_rules: { uses_of_funds: ["export_expansion", "marketing"], min_revenue: 100000 }, stacking_limit_pct: 75, required_docs: ["Financial statements", "Export marketing plan and budget", "Incorporation documents"], eligible_expenses: ["Trade shows and travel", "Market research", "Marketing materials for the target market", "IP protection in the target market"] },
   { slug: "csbfp", name: "Canada Small Business Financing Program (CSBFP)", funder: "Innovation, Science and Economic Development Canada", level: "federal", type: "loan",
     summary: "Government-backed loans through participating lenders for equipment, leaseholds and real property.", stages: ["seed", "growth", "expansion"], rolling: true,
-    official_url: "https://ised-isde.canada.ca/site/canada-small-business-financing-program/en" },
+    official_url: "https://ised-isde.canada.ca/site/canada-small-business-financing-program/en",
+    eligibility_rules: { max_revenue: 10000000, uses_of_funds: ["inventory_equipment", "working_capital"] }, required_docs: ["Financial statements (2–3 years)", "Tax returns / Notice of Assessment", "Business plan", "Quotes for equipment or leasehold improvements"] },
   { slug: "canada-summer-jobs", name: "Canada Summer Jobs", funder: "Employment and Social Development Canada", level: "federal", type: "wage_subsidy",
     summary: "Wage subsidies for employers who create summer jobs for young people aged 15 to 30.", stages: ["idea", "preseed", "seed", "growth", "expansion"],
-    official_url: "https://www.canada.ca/en/employment-social-development/services/funding/canada-summer-jobs.html" },
+    official_url: "https://www.canada.ca/en/employment-social-development/services/funding/canada-summer-jobs.html",
+    eligibility_rules: { uses_of_funds: ["hire_staff"] }, required_docs: ["Job description", "CRA business number"] },
   { slug: "student-work-placement", name: "Student Work Placement Program", funder: "Employment and Social Development Canada", level: "federal", type: "wage_subsidy",
     summary: "Wage subsidies for hiring post-secondary students into work-integrated learning placements.", stages: ["preseed", "seed", "growth", "expansion"], rolling: true,
-    official_url: "https://www.canada.ca/en/employment-social-development/programs/student-work-placement.html" },
+    official_url: "https://www.canada.ca/en/employment-social-development/programs/student-work-placement.html",
+    eligibility_rules: { uses_of_funds: ["hire_staff"] }, required_docs: ["Job description", "Student placement details"] },
   { slug: "pacifican-bsp", name: "PacifiCan Business Scale-up and Productivity", funder: "Pacific Economic Development Canada", level: "federal", province: "BC", type: "repayable",
     summary: "Interest-free repayable contributions for B.C. businesses scaling up or adopting technology.", stages: ["growth", "expansion"], rolling: true,
     official_url: "https://www.canada.ca/en/pacific-economic-development/services/funding.html" },
@@ -33,16 +42,19 @@ export const SAMPLE_PROGRAMS: Sample[] = [
     official_url: "https://www.mitacs.ca/our-programs/accelerate/" },
   { slug: "futurpreneur-startup", name: "Futurpreneur Start-up Program", funder: "Futurpreneur Canada", level: "federal", type: "loan",
     summary: "Start-up financing and mentorship for entrepreneurs aged 18 to 39.", stages: ["idea", "preseed"], rolling: true,
-    official_url: "https://www.futurpreneur.ca/" },
+    official_url: "https://www.futurpreneur.ca/",
+    eligibility_rules: { ownership_tags: ["youth_owned"] }, required_docs: ["Business plan", "Cash-flow forecast (2 years)", "Personal credit check consent"] },
   { slug: "bdc-small-business-loan", name: "BDC Small Business Loan", funder: "Business Development Bank of Canada", level: "federal", type: "loan",
     summary: "Online term loans for working capital and growth projects.", stages: ["seed", "growth", "expansion"], rolling: true,
-    official_url: "https://www.bdc.ca/en/financing" },
+    official_url: "https://www.bdc.ca/en/financing",
+    eligibility_rules: { min_revenue: 30000, uses_of_funds: ["working_capital", "inventory_equipment"] }, required_docs: ["Financial statements", "Tax returns / Notice of Assessment"] },
   { slug: "innovate-bc-ignite", name: "Innovate BC Ignite", funder: "Innovate BC", level: "provincial", province: "BC", type: "grant",
     summary: "Funding for industry-academic partnerships commercializing new technology in B.C.", stages: ["seed", "growth"],
     official_url: "https://www.innovatebc.ca/" },
   { slug: "innovator-skills-initiative", name: "Innovator Skills Initiative", funder: "Innovate BC", level: "provincial", province: "BC", type: "wage_subsidy",
     summary: "Wage support for B.C. businesses hiring in technology and innovation roles.", stages: ["preseed", "seed", "growth"],
-    official_url: "https://www.innovatebc.ca/" },
+    official_url: "https://www.innovatebc.ca/",
+    eligibility_rules: { uses_of_funds: ["hire_staff"] }, required_docs: ["Job description", "Financial statements"] },
   { slug: "bc-employer-training-grant", name: "B.C. Employer Training Grant", funder: "Province of British Columbia", level: "provincial", province: "BC", type: "grant",
     summary: "Cost-share funding for third-party skills training for current and new employees.", stages: ["seed", "growth", "expansion"], cost_share_pct: 80,
     official_url: "https://www.workbc.ca/" },
@@ -60,5 +72,6 @@ export const SAMPLE_PROGRAMS: Sample[] = [
     official_url: "https://www2.gov.bc.ca/gov/content/environment/climate-change/industry/cleanbc-industry-fund" },
   { slug: "women-entrepreneurship-loan-fund", name: "Women Entrepreneurship Loan Fund", funder: "Innovation, Science and Economic Development Canada", level: "federal", type: "loan",
     summary: "Loans for women-owned businesses through participating lenders, delivered under the Women Entrepreneurship Strategy.", stages: ["idea", "preseed", "seed", "growth"],
-    official_url: "https://ised-isde.canada.ca/site/women-entrepreneurship-strategy/en" },
+    official_url: "https://ised-isde.canada.ca/site/women-entrepreneurship-strategy/en",
+    eligibility_rules: { ownership_tags: ["women_owned"] }, required_docs: ["Business plan", "Financial statements or projections"] },
 ];

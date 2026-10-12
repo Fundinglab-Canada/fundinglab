@@ -49,3 +49,25 @@ insert into public.deals (match_id, business_id, partner_id, deal_type, status, 
 select m.id, m.business_id, m.partner_id, 'lending_partner', 'in_discussion', 400000, 0.015
 from public.matches m where m.status = 'mutual' and m.business_id = 'b0000000-0000-0000-0000-000000000002'
 on conflict (match_id) do nothing;
+
+-- Phase 2: Application Center cards (one approved → funding history + obligations via trigger),
+-- a capital stack, a saved program with alerts, and a Growth plan comp for the demo growth-stage owner.
+insert into public.applications (business_id, type, program_id, title, provider, amount_requested, status, due_date, checklist)
+select 'b0000000-0000-0000-0000-000000000003', 'grant', p.id, p.name, p.funder, 250000, 'drafting', current_date + 21,
+       '[{"id":"r1","label":"Project description and budget","done":true},{"id":"r2","label":"Financial statements","done":false},{"id":"r3","label":"Incorporation documents","done":true}]'::jsonb
+  from public.programs p where p.slug = 'irap'
+on conflict do nothing;
+insert into public.applications (business_id, type, title, provider, amount_requested, amount_approved, status)
+values ('b0000000-0000-0000-0000-000000000003', 'loan', 'Equipment loan for welding cell line', 'Credit union (sample)', 400000, 350000, 'approved'),
+       ('b0000000-0000-0000-0000-000000000002', 'grant', 'Export marketing project (sample)', 'Sample funder', 60000, null, 'submitted');
+insert into public.saved_programs (business_id, program_id, alert_enabled)
+select 'b0000000-0000-0000-0000-000000000003', id, true from public.programs where slug in ('redip', 'rtri', 'irap')
+on conflict do nothing;
+insert into public.roadmaps (business_id, target_amount, capital_stack, done_steps)
+values ('b0000000-0000-0000-0000-000000000003', 1500000,
+        '{"items":[{"id":"s1","source":"grant","amount":250000},{"id":"s2","source":"bank_loan","amount":350000},{"id":"s3","source":"venture_capital","amount":900000}],"pre_money":9000000}'::jsonb,
+        '{assessment}')
+on conflict (business_id) do nothing;
+insert into public.subscriptions (user_id, plan, status)
+values ('d0000000-0000-0000-0000-000000000003', 'growth', 'active')
+on conflict (user_id) do nothing;

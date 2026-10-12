@@ -39,6 +39,6 @@ jobs:
       - name: Migrations, seeds, smoke test and RLS privacy suite on plain Postgres (Supabase objects stubbed)
         run: |
           for f in supabase/tests/supabase_stubs.sql supabase/migrations/*.sql supabase/seed.sql supabase/seed_programs.sql supabase/seed_demo.sql \
-                   supabase/tests/smoke.sql supabase/tests/rls_privacy.sql; do
+                   supabase/tests/smoke.sql supabase/tests/rls_privacy.sql supabase/tests/phase2.sql; do
             echo "== $f"; psql -v ON_ERROR_STOP=1 -q -f "$f"
           done

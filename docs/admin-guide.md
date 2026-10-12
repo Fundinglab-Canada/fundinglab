@@ -27,7 +27,15 @@ One page for the team. Everything here is enforced by database rules (RLS), not 
 ## Programs and featured grants
 
 - **Programs** — *Featured only* shows REDIP and RTRI. Each page section is a JSON block: edit the text, keep the structure. Upload the guide PDF (the contact shown must be “Funding Lab Team” and the website Contact page only — no personal names, numbers or email addresses).
+- **Matcher fields** — the Grant Intelligence matcher reads each program's stages, industries, province, amount range and **Matcher rules (JSON)**: `provinces`, `legal_structures`, `ownership_tags`, `min_revenue`, `max_revenue`, `min_employees`, `uses_of_funds`, and `notes` (shown to businesses as cautions). **Required documents** become the checklist when a business clicks *Start application*. Leave a rule out rather than guess: a wrong rule hides a program from businesses that qualify.
 - **Verify every 90 days**: open the official page, check amounts, deadlines and eligibility, update, then *Mark verified*. Rows flagged amber are overdue. Sample programs are placeholders until replaced.
+
+## Plans and revenue
+
+- Plans are Free, Starter, Growth and Pro. Prices live in Stripe (`STRIPE_PRICE_STARTER`, `_GROWTH`, `_PRO`); businesses subscribe at **/pricing** and manage billing from Settings (Stripe Customer Portal).
+- **Comp a plan** (pilots, sponsored seats): **Businesses → (business) → Plan**. Owners paying through Stripe are changed in the Stripe dashboard instead.
+- Road to Funding members get Growth automatically while their cohort runs.
+- **Revenue & plans** shows paying vs comped subscribers, paid services, cohort revenue and success fees. MRR and invoices are in Stripe.
 
 ## Careers
 
@@ -41,7 +49,8 @@ Team, announcements, partner logos and testimonials. Rules: bios stay “[Bio to
 
 - Partners never see business names, websites or documents before a mutual introduction; deal flow is anonymized and references can't be linked across partners.
 - Every consent change is logged. Users can download their data and delete their account from Settings.
-- **Audit log** records every change to partners, matches, deals, programs, enrollments and applications.
+- **Audit log** records every change to partners, matches, deals, programs, enrollments, job applications, business applications, plans and data room invitations.
+- Data room viewers only see the room they were invited to, until the invitation expires or is revoked. PDFs are watermarked with their email and the date.
 
 ## If something breaks
 

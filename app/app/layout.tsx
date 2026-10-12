@@ -7,6 +7,11 @@ export const dynamic = "force-dynamic";
 const LINKS = [
   { href: "/app", label: "Dashboard" },
   { href: "/app/profile", label: "Profile" },
+  { href: "/app/roadmap", label: "Roadmap" },
+  { href: "/app/grants", label: "Grants" },
+  { href: "/app/applications", label: "Applications" },
+  { href: "/app/prep", label: "Prep Studio" },
+  { href: "/app/calculators", label: "Calculators" },
   { href: "/app/matches", label: "Introductions" },
   { href: "/app/assessment", label: "Readiness" },
   { href: "/app/share", label: "Investor snapshot" },

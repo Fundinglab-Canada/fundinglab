@@ -6,7 +6,9 @@ import { dateShort } from "@/lib/format";
 import { InvestorSnapshot, type SnapshotData } from "@/components/snapshot";
 import { snapshotSummary } from "@/lib/snapshot-summary";
 import type { Business } from "@/lib/types";
-import { createBusinessShareLink, revokeBusinessShareLink, setBusinessVisibility } from "../../actions";
+import { createBusinessShareLink, revokeBusinessShareLink, setBusinessVisibility, setPlan } from "../../actions";
+import { PLANS, planName } from "@/lib/plans";
+import { appStatusLabel } from "@/lib/applications";
 
 export const metadata = { title: "Business" };
 
@@ -19,10 +21,12 @@ export default async function BusinessAdmin({ params, searchParams }: { params: 
   const supabase = await createClient();
   const { data: b } = await supabase.from("businesses").select("*").eq("id", id).maybeSingle<Business>();
   if (!b) notFound();
-  const [{ data: history }, { data: docs }, { data: links }] = await Promise.all([
+  const [{ data: history }, { data: docs }, { data: links }, { data: sub }, { data: apps }] = await Promise.all([
     supabase.from("funding_history").select("source, amount, year, program_name, department, loan_subtype").eq("business_id", id).order("year", { ascending: false }),
     supabase.from("documents").select("kind").eq("business_id", id),
     supabase.from("share_links").select("id, token, label, expires_at, revoked_at, password_hash, created_at, share_link_views(viewed_at, viewer_email)").eq("business_id", id).order("created_at", { ascending: false }),
+    supabase.from("subscriptions").select("plan, status, stripe_subscription_id, current_period_end").eq("user_id", b.owner_id).maybeSingle(),
+    supabase.from("applications").select("id, title, status, amount_requested, due_date").eq("business_id", id).order("updated_at", { ascending: false }),
   ]);
   const snapshot: SnapshotData = { ...b, funding_history: history ?? [], documents: [...new Set((docs ?? []).map((d) => d.kind as string))] };
   const base = `${env.siteUrl()}/b/${b.slug}`;
@@ -38,6 +42,23 @@ export default async function BusinessAdmin({ params, searchParams }: { params: 
         <Link href={`/admin/matching?b=${b.id}`} className="btn-secondary btn-sm">Open in matching</Link>
       </div>
       {sp.error && <p className="error rounded-md bg-danger-soft px-3 py-2" role="alert">{sp.error}</p>}
+      <div className="card flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold">Plan</h2>
+          <p className="text-sm text-subtle">{planName(sub?.plan)}{sub?.stripe_subscription_id ? ` · Stripe (${sub.status})` : sub ? " · set by an admin" : ""}{sub?.current_period_end ? ` · renews ${dateShort(sub.current_period_end)}` : ""}. Cohort members get Growth during their cohort automatically.</p>
+        </div>
+        <form action={setPlan} className="flex items-end gap-2">
+          <input type="hidden" name="user_id" value={b.owner_id} /><input type="hidden" name="business_id" value={b.id} />
+          <label className="field">Comp plan<select name="plan" defaultValue={sub?.plan ?? "free"} className="input">{PLANS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+          <button className="btn-secondary btn-sm">Save plan</button>
+        </form>
+      </div>
+      {(apps ?? []).length > 0 && (
+        <div className="card flex flex-col gap-2">
+          <h2 className="text-lg font-bold">Applications</h2>
+          <ul className="flex flex-col gap-1 text-sm">{(apps ?? []).map((a) => <li key={a.id} className="flex justify-between gap-2"><span>{a.title}</span><span className="text-subtle">{appStatusLabel(a.status)}{a.due_date ? ` · due ${dateShort(a.due_date)}` : ""}</span></li>)}</ul>
+        </div>
+      )}
       {sp.saved && <p className="pill-success self-start" role="status">Saved.</p>}
 
       <div className="card flex flex-col gap-4">

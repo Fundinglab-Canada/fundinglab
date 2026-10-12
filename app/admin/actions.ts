@@ -256,3 +256,22 @@ export async function revokeBusinessShareLink(formData: FormData) {
   await supabase.from("share_links").update({ revoked_at: new Date().toISOString() }).eq("id", z.string().uuid().parse(formData.get("id")));
   revalidatePath(`/admin/businesses/${id}`);
 }
+
+/** Comp or change a business owner's plan (e.g. sponsored seats, pilots). Stripe subscribers are managed in Stripe. */
+export async function setPlan(formData: FormData) {
+  const { userId } = await requireRole("admin", "/admin");
+  const supabase = await createClient();
+  const parsed = z.object({ user_id: z.string().uuid(), business_id: z.string().uuid(), plan: z.enum(["free", "starter", "growth", "pro"]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/admin/businesses");
+  const { data: existing } = await supabase.from("subscriptions").select("stripe_subscription_id, status").eq("user_id", parsed.data.user_id).maybeSingle();
+  if (existing?.stripe_subscription_id && ["active", "trialing", "past_due"].includes(existing.status)) {
+    redirect(`/admin/businesses/${parsed.data.business_id}?error=${encodeURIComponent("This owner pays through Stripe. Change the plan in the Stripe dashboard.")}`);
+  }
+  const { error } = await supabase.from("subscriptions").upsert(
+    { user_id: parsed.data.user_id, plan: parsed.data.plan, status: "active", comped_by: userId },
+    { onConflict: "user_id" },
+  );
+  if (error) redirect(`/admin/businesses/${parsed.data.business_id}?error=${encodeURIComponent(error.message)}`);
+  revalidatePath(`/admin/businesses/${parsed.data.business_id}`);
+  redirect(`/admin/businesses/${parsed.data.business_id}?saved=1`);
+}

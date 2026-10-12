@@ -11,6 +11,7 @@ import { completeness, readiness } from "@/lib/readiness";
 import { slugify } from "@/lib/format";
 import { consentSchema, step1Schema, step2Schema, step3Schema, step4Schema, tractionSchema } from "@/lib/validation";
 import { EMAIL_TEMPLATES, sendEmail } from "@/lib/email";
+import { KIND_FOLDER } from "@/lib/prep";
 
 export type StepState = { error?: string; fieldErrors?: Record<string, string> } | undefined;
 const LAST_STEP = 6;
@@ -228,7 +229,7 @@ export async function uploadDocument(formData: FormData) {
   const { error } = await supabase.storage.from("documents").upload(path, file, { contentType: file.type, upsert: false });
   if (error) redirect(back("Upload failed. Try again."));
   await supabase.from("documents").insert({
-    business_id: b.id, kind, storage_path: path, file_name: file.name.slice(0, 200), mime_type: file.type, size_bytes: file.size,
+    business_id: b.id, kind, folder: KIND_FOLDER[kind] ?? "other", storage_path: path, file_name: file.name.slice(0, 200), mime_type: file.type, size_bytes: file.size,
   });
   await recomputeReadiness(supabase, b.id);
   revalidatePath("/app/profile");

@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { EMAIL_TEMPLATES, sendEmail } from "@/lib/email";
 import { SERVICES } from "@/lib/constants";
 import { teamInbox } from "@/lib/email";
+import { isPlan, planForPrice } from "@/lib/plans";
 import { cohortIcs, defaultSchedule, type CohortSession } from "@/lib/cohort";
 
 export const runtime = "nodejs";
@@ -27,6 +28,16 @@ export async function POST(request: Request) {
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded": {
       const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode === "subscription" && session.metadata?.user_id && isPlan(session.metadata.plan)) {
+        await db.from("subscriptions").upsert({
+          user_id: session.metadata.user_id,
+          plan: session.metadata.plan,
+          status: "active",
+          stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
+          stripe_subscription_id: typeof session.subscription === "string" ? session.subscription : null,
+        }, { onConflict: "user_id" });
+        break;
+      }
       if (session.metadata?.cohort_enrollment_id) {
         if (session.payment_status !== "unpaid") await markEnrolled(db, session);
         break;
@@ -70,8 +81,27 @@ export async function POST(request: Request) {
       if (pi && charge.refunded) await db.from("cohort_enrollments").update({ status: "refunded" }).eq("stripe_payment_id", pi);
       break;
     }
+    case "customer.subscription.created":
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.user_id;
+      if (!userId) break; // partner memberships are one-off checkouts handled above
+      const item = sub.items.data[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined;
+      const plan = planForPrice(item?.price.id) ?? (isPlan(sub.metadata.plan) ? sub.metadata.plan : null);
+      const periodEnd = (sub as Stripe.Subscription & { current_period_end?: number }).current_period_end ?? item?.current_period_end;
+      await db.from("subscriptions").upsert({
+        user_id: userId,
+        ...(plan ? { plan } : {}),
+        status: sub.status,
+        stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer.id,
+        stripe_subscription_id: sub.id,
+        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+      }, { onConflict: "user_id" });
+      break;
+    }
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
+      await db.from("subscriptions").update({ plan: "free", status: "canceled" }).eq("stripe_subscription_id", sub.id);
       const { data: order } = await db.from("service_orders").select("partner_id").eq("stripe_subscription_id", sub.id).maybeSingle();
       if (order?.partner_id) await db.from("partners").update({ membership_tier: "standard" }).eq("id", order.partner_id);
       break;

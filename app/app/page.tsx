@@ -3,11 +3,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMyBusiness, requireUser } from "@/lib/auth";
 import { FUNDING_PATHS, SERVICES, SERVICE_TRIGGERS, industryLabel, stageName } from "@/lib/constants";
-import { money } from "@/lib/format";
+import { dateShort, money } from "@/lib/format";
 import { completeness } from "@/lib/readiness";
 import { bandFor } from "@/lib/assessment";
 import { getOpenCohort, getUpcomingWebinars } from "@/lib/content";
 import type { FundingHistoryRow, Introduction } from "@/lib/types";
+import { rankPrograms, programDeadline } from "@/lib/programs/match";
+import { stackMetrics, type StackItem } from "@/lib/roadmap";
+import { appStatusLabel } from "@/lib/applications";
+import type { ProgramRow } from "@/lib/programs/types";
 import { JourneyBar } from "@/components/journey";
 import { EventTime } from "@/components/local-time";
 
@@ -21,7 +25,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
 
   const supabase = await createClient();
-  const [{ data: historyData }, { data: docs }, { data: intros }, { data: assessment }, { data: regs }, { data: enrollment }, webinars, cohort] = await Promise.all([
+  const in30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+  const [{ data: historyData }, { data: docs }, { data: intros }, { data: assessment }, { data: regs }, { data: enrollment }, webinars, cohort,
+    { data: apps }, { data: obligations }, { data: programs }, { data: savedRows }, { data: roadmap }] = await Promise.all([
     supabase.from("funding_history").select("*").eq("business_id", business.id).order("year", { ascending: false }),
     supabase.from("documents").select("kind").eq("business_id", business.id),
     supabase.rpc("fl_my_introductions", { p_business_id: business.id }),
@@ -30,6 +36,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     supabase.from("cohort_enrollments").select("status, cohort_id").eq("user_id", userId).in("status", ["enrolled", "waitlisted", "completed"]).limit(1).maybeSingle(),
     getUpcomingWebinars(1),
     getOpenCohort(),
+    supabase.from("applications").select("id, title, status, due_date").eq("business_id", business.id).order("updated_at", { ascending: false }),
+    supabase.from("obligations").select("id, title, due_date").eq("business_id", business.id).neq("status", "done").lte("due_date", in30).order("due_date").limit(10),
+    supabase.from("programs").select("*").eq("active", true),
+    supabase.from("saved_programs").select("program_id").eq("business_id", business.id),
+    supabase.from("roadmaps").select("capital_stack, target_amount").eq("business_id", business.id).maybeSingle(),
   ]);
   const history = (historyData ?? []) as FundingHistoryRow[];
   const introductions = (intros ?? []) as Introduction[];
@@ -47,6 +58,23 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   ].map((k) => SERVICES.find((s) => s.kind === k)!).slice(0, 4 - recServices.length);
   const paths = FUNDING_PATHS.filter((p) => business.stage && (p.stages as readonly string[]).includes(business.stage));
   const nextWebinar = webinars[0];
+  const allPrograms = (programs ?? []) as ProgramRow[];
+  const topPrograms = rankPrograms(allPrograms, business).filter((r) => !r.match.blocked && !r.match.closed).slice(0, 3);
+  const savedIds = new Set((savedRows ?? []).map((r) => r.program_id as string));
+  const activeApps = (apps ?? []).filter((a) => !["approved", "declined"].includes(a.status));
+  const now = Date.now();
+  const deadlines = [
+    ...(obligations ?? []).map((o) => ({ key: `o${o.id}`, title: o.title as string, date: o.due_date as string, href: "/app/applications" })),
+    ...activeApps.filter((a) => a.due_date && a.due_date <= in30).map((a) => ({ key: `a${a.id}`, title: `Application due: ${a.title}`, date: a.due_date as string, href: `/app/applications/${a.id}` })),
+    ...allPrograms.filter((p) => savedIds.has(p.id)).flatMap((p) => {
+      const d = programDeadline(p);
+      return d && d.getTime() > now && d.getTime() - now <= 30 * 864e5 ? [{ key: `p${p.id}`, title: `Intake closes: ${p.name}`, date: d.toISOString().slice(0, 10), href: `/app/grants/${p.slug}` }] : [];
+    }),
+  ].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 6);
+  const stack = (roadmap?.capital_stack ?? {}) as { items?: StackItem[]; pre_money?: number | null };
+  const stackTarget = Number(roadmap?.target_amount ?? business.amount_sought ?? 0);
+  const raisedToDate = history.filter((h) => h.status === "active" || h.status === "received").reduce((s, h) => s + Number(h.amount), 0);
+  const planned = stackMetrics(stack.items ?? [], stackTarget, stack.pre_money ?? null);
   const registered = nextWebinar && (regs ?? []).some((r) => r.session_id === nextWebinar.id);
 
   return (
@@ -107,6 +135,53 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <Link href="/grants" className="mt-auto text-sm font-semibold text-brand-text underline">Find grants you may qualify for</Link>
         </div>
       </div>
+
+      <div className="grid gap-5 lg:grid-cols-3">
+        <div className="card flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Capital stack</h2>
+          {stackTarget > 0 ? (
+            <>
+              <span className="text-sm text-subtle">Planned <b className="num text-ink">{money(planned.total, true)}</b> of <b className="num text-ink">{money(stackTarget, true)}</b></span>
+              <div className="h-2 overflow-hidden rounded-full bg-muted"><i className="block h-full bg-brand" style={{ width: `${planned.progressPct}%` }} /></div>
+              <span className="text-[13px] text-subtle">Funding received to date: <b className="num text-ink">{money(raisedToDate, true)}</b></span>
+            </>
+          ) : <p className="text-sm text-subtle">Set your funding need to plan your stack.</p>}
+          <Link href="/app/roadmap" className="btn-secondary btn-sm mt-auto self-start">Open roadmap</Link>
+        </div>
+
+        <div className="card flex flex-col gap-3">
+          <div className="flex items-center justify-between"><h2 className="text-lg font-bold">Applications</h2><span className="pill">{activeApps.length} active</span></div>
+          {activeApps.length ? (
+            <ul className="flex flex-col gap-1.5 text-sm">{activeApps.slice(0, 4).map((a) => (
+              <li key={a.id} className="flex justify-between gap-2"><Link href={`/app/applications/${a.id}`} className="truncate hover:underline">{a.title}</Link><span className="pill shrink-0">{appStatusLabel(a.status)}</span></li>
+            ))}</ul>
+          ) : <p className="text-sm text-subtle">Nothing in progress. Start one from a matched program.</p>}
+          <Link href="/app/applications" className="btn-secondary btn-sm mt-auto self-start">Application Center</Link>
+        </div>
+
+        <div className="card flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Next 30 days</h2>
+          {deadlines.length ? (
+            <ul className="flex flex-col gap-1.5 text-sm">{deadlines.map((d) => (
+              <li key={d.key} className="flex justify-between gap-2"><Link href={d.href} className="truncate hover:underline">{d.title}</Link><span className="num shrink-0 text-subtle">{dateShort(d.date)}</span></li>
+            ))}</ul>
+          ) : <p className="text-sm text-subtle">No deadlines coming up. Save programs to track their intake dates.</p>}
+        </div>
+      </div>
+
+      {topPrograms.length > 0 && (
+        <div className="card flex flex-col gap-3">
+          <div className="flex items-center justify-between"><h2 className="text-lg font-bold">Recommended programs</h2><Link href="/app/grants" className="btn-ghost btn-sm">All matches</Link></div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {topPrograms.map(({ program: p, match }) => (
+              <Link key={p.id} href={`/app/grants/${p.slug}`} className="flex flex-col gap-1 rounded-lg border border-line p-3 hover:border-brand">
+                <b className="text-ink">{p.name}</b><span className="text-[13px] text-subtle">{match.why[0] ?? p.funder}</span>
+                <span className="mt-auto pt-2 text-sm"><b className="num text-brand-text">{match.score}</b> match</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="card flex flex-col gap-3">

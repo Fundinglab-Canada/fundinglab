@@ -39,3 +39,21 @@ export async function getMyBusiness() {
     .maybeSingle();
   return data as import("@/lib/types").Business | null;
 }
+
+/** Effective plan for the signed-in user (paid/comped, Growth during a cohort, Pro for admins). */
+export async function getMyPlan(): Promise<import("@/lib/plans").PlanId> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("fl_my_plan");
+  const { isPlan } = await import("@/lib/plans");
+  return isPlan(data) ? data : "free";
+}
+
+/** Business owner + plan, redirecting to the profile when no business exists yet. */
+export async function requireBusinessContext(next: string) {
+  const s = await requireUser(next);
+  if (s.profile.role === "partner") redirect("/partner");
+  const business = await getMyBusiness();
+  if (!business) redirect("/app/profile?step=1");
+  const plan = await getMyPlan();
+  return { ...s, business, plan };
+}
